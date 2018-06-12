@@ -1,0 +1,122 @@
+version: '3.5'
+
+x-node-env:
+  &kz-env
+    KAZOO_COOKIE: change_me
+    LC_CTYPE: en_US.UTF-8
+    LANG: en_US.UTF-8
+    CODE_LOADING_MODE: interactive
+    RELX_REPLACE_OS_VARS: "true"
+    PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/kazoo/_rel/kazoo/bin"
+
+x-devnode-cfg:
+  &kz-dev
+    - type: bind
+      source: ${KAZOO_SRC_PATH:-/home/hesaam/work/2600hz/kazoo/master}
+      target: /opt/kazoo
+      read_only: false
+    - type: bind
+      source: ./config.ini
+      target: /etc/kazoo/config.ini
+      read_only: true
+    - type: bind
+      source: ${KAZOO_SOUNDS_PATH:-../media-files/kazoo-core}
+      target: /media-files
+      read_only: true
+
+services:
+
+  couchdb:
+    image: couchdb:2.1.1
+    hostname: 'couchdb-{{.Task.Slot}}.{{index .Service.Labels "com.docker.stack.namespace"}}'
+    environment:
+      NODENAME: 'couchdb-{{.Task.Slot}}.{{index .Service.Labels "com.docker.stack.namespace"}}'
+    ports:
+      - target: 5984
+      - target: 5986
+    deploy:
+      mode: replicated
+    volumes:
+      - type: bind
+        source: ./couchdb_cluster.ini
+        target: /opt/couchdb/etc/local.d/cluster.ini
+      - type: bind
+        source: "./data/"
+        target: "/opt/couchdb/data"
+      # - type: ${COUCHDB_VOL_TYPE:-tmpfs}
+      #   target: ${COUCHDB_VOL_TARGET:-/opt/couchdb/data}
+    networks:
+      - kazoo
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    hostname: 'rabbitmq-{{.Task.Slot}}.{{index .Service.Labels "com.docker.stack.namespace"}}'
+    ports:
+      - target: 15672
+        mode: host
+    deploy:
+      endpoint_mode: dnsrr
+    networks:
+      - kazoo
+
+  freeswitch:
+    image: 2600hz/kazoo-freeswitch:alpine-edge
+    hostname: 'freeswitch-{{.Task.Slot}}.{{index .Service.Labels "com.docker.stack.namespace"}}'
+    volumes:
+      - type: bind
+        source: ../media-files/freeswitch
+        target: /usr/share/freeswitch/sounds
+        read_only: true
+    deploy:
+      endpoint_mode: dnsrr
+    networks:
+      - kazoo
+
+  kapps:
+    image: ${KAZOO_DEV_BASE_CONTAINER:-kazoo-build}
+    environment:
+       << : *kz-env
+       KAZOO_NODE: apps
+       NODE_NAME: apps
+       REL: apps
+       # KAZOO_APPS: "sysconf,blackhole,callflow,conference,registrar,pusher,stepswitch,trunkstore"
+    volumes: *kz-dev
+    ports:
+      - "8000"
+      - "5555"
+    hostname: 'kazoo-{{.Task.Slot}}.{{index .Service.Labels "com.docker.stack.namespace"}}'
+    tty: true
+    command: ["bash"]
+    networks:
+      - kazoo
+
+  callmgr:
+    image: ${KAZOO_DEV_BASE_CONTAINER:-kazoo-build}
+    environment:
+       << : *kz-env
+       KAZOO_NODE: ecallmgr
+       NODE_NAME: ecallmgr
+       REL: ecallmgr
+       KAZOO_APPS: "ecallmgr"
+    hostname: 'callmgr-{{.Task.Slot}}.{{index .Service.Labels "com.docker.stack.namespace"}}'
+    volumes: *kz-dev
+    ports:
+      - "8000"
+      - "5555"
+    command: ["bash"]
+    tty: true
+    networks:
+      - kazoo
+
+  kamailio:
+    image: 2600hz/kazoo-kamailio:alpine-edge
+    hostname: 'kamailio-{{.Task.Slot}}.{{index .Service.Labels "com.docker.stack.namespace"}}'
+    environment:
+       ENABLE_SERVICE_NAME: "false"
+       ENABLE_ADVERTISE: "false"
+    networks:
+       - kazoo
+
+networks:
+    kazoo:
+       attachable: true
