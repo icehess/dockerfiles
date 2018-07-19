@@ -1,0 +1,12 @@
+#!/bin/bash
+
+. /opt/scripts/my_enviroment
+
+sup kazoo_media_maintenance import_prompts $KAZOO_SOUNDS en-us
+sup -n ecallmgr ecallmgr_maintenance add_fs_node freeswitch@$REALM
+sup -n ecallmgr ecallmgr_maintenance allow_sbc $REALM $MY_IP
+sup crossbar_maintenance create_account admin $REALM admin admin
+sup crossbar_maintenance init_apps $MOSNTER_APPS_DIR http://$MY_IP:8000/v2
+sup crossbar_maintenance start_module cb_temporal_rules_sets
+sup crossbar_maintenance start_module cb_port_requests
+

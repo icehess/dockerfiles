@@ -1,0 +1,27 @@
+#!/bin/bash
+
+. /opt/scripts/my_enviroment
+
+#echo $(fgcolor red "Stopping CouchDB") $(fgcolor end)
+echo "Stopping CouchDB"
+systemctl stop couchdb
+
+rm -rf $COUCHDB_DBPATH
+mkdir $COUCHDB_DBPATH
+chown -R couchdb:couchdb $COUCHDB_DBPATH
+
+#echo $(fgcolor green "Starting CouchDB again") $(fgcolor end)
+echo "Starting CouchDB again"
+systemctl restart couchdb
+
+echo
+echo "Setting admin party"
+#echo $(fgcolor red "Waiting 10s for CouchDB to start up") $(fgcolor end)
+echo "Waiting 10s for CouchDB to start up"
+sleep 10
+
+
+curl -iX PUT 'http://127.0.0.1:5984/_global_changes'
+curl -iX PUT 'http://127.0.0.1:5984/_replicator'
+curl -iX PUT 'http://127.0.0.1:5984/_metadata'
+curl -iX PUT 'http://127.0.0.1:5984/_users'
