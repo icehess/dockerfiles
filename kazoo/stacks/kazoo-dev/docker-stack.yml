@@ -7,7 +7,7 @@ x-node-env:
     LANG: en_US.UTF-8
     CODE_LOADING_MODE: interactive
     RELX_REPLACE_OS_VARS: "true"
-    PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/kazoo/_rel/kazoo/bin"
+    PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/kazoo/app/_rel/kazoo/bin"
 
 x-devnode-cfg:
   &kz-dev
@@ -27,11 +27,12 @@ x-devnode-cfg:
 services:
 
   couchdb:
-    image: couchdb:2.1.1
+    image: couchdb:latest
     hostname: 'couchdb-{{.Task.Slot}}.{{index .Service.Labels "com.docker.stack.namespace"}}'
     environment:
       NODENAME: 'couchdb-{{.Task.Slot}}.{{index .Service.Labels "com.docker.stack.namespace"}}'
     ports:
+      - target: 9100
       - target: 5984
       - target: 5986
     deploy:
@@ -73,15 +74,16 @@ services:
       - kazoo
 
   kapps:
-    image: ${KAZOO_DEV_BASE_CONTAINER:-kazoo-build}
+    image: ${KZ_DEV_BASE_IMAGE:-kazoo-build}
     environment:
        << : *kz-env
        KAZOO_NODE: apps
        NODE_NAME: apps
        REL: apps
-       # KAZOO_APPS: "sysconf,blackhole,callflow,conference,registrar,pusher,stepswitch,trunkstore"
+       KAZOO_APPS: ${KAZOO_APPS:-"blackhole,callflow,cdr,conference,crossbar,fax,hangups,media_mgr,milliwatt,omnipresence,pivot,registrar,reorder,stepswitch,sysconf,tasks,teletype,trunkstore,webhooks"}
     volumes: *kz-dev
     ports:
+      - "11500"
       - "8000"
       - "5555"
     hostname: 'kazoo-{{.Task.Slot}}.{{index .Service.Labels "com.docker.stack.namespace"}}'
@@ -91,7 +93,7 @@ services:
       - kazoo
 
   callmgr:
-    image: ${KAZOO_DEV_BASE_CONTAINER:-kazoo-build}
+    image: ${KZ_DEV_BASE_IMAGE:-kazoo-build}
     environment:
        << : *kz-env
        KAZOO_NODE: ecallmgr
@@ -101,8 +103,7 @@ services:
     hostname: 'callmgr-{{.Task.Slot}}.{{index .Service.Labels "com.docker.stack.namespace"}}'
     volumes: *kz-dev
     ports:
-      - "8000"
-      - "5555"
+      - "11500"
     command: ["bash"]
     tty: true
     networks:
@@ -117,6 +118,15 @@ services:
     networks:
        - kazoo
 
-networks:
+  mailcatcher:
+    hostname: 'mailcatcher-{{.Task.Slot}}.{{index .Service.Labels "com.docker.stack.namespace"}}'
+    image: 'schickling/mailcatcher'
+    ports:
+      - "1080"
+      - "1025"
+    networks:
+      - kazoo
+
+    networks:
     kazoo:
        attachable: true

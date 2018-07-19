@@ -38,4 +38,6 @@ RUN curl https://codeload.github.com/icehess/dotfiles/zip/docker > /tmp/docker.z
 
 COPY entrypoint.sh /entrypoint.sh
 
+EXPOSE ["11500", "8000", "5555"]
+
 ENTRYPOINT ["/entrypoint.sh"]

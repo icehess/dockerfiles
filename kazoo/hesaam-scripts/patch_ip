@@ -1,0 +1,24 @@
+#!/bin/sh
+
+. /opt/scripts/my_enviroment
+
+echo ":: Setting IP address to $MY_IP"
+
+echo "IP: /etc/hosts"
+sed -i "s/.*\(hes\.2600hz\.com\)/$MY_IP \1/g" /etc/hosts
+sed -i "s/.*\(hes\)$/$MY_IP \1/g" /etc/hosts
+
+#echo "IP: FreeSwitch"
+#sed -i "s/sip-ip.*/sip-ip\" value=\"$MY_IP\"\/\>/g" $SIPINTERFACE
+#sed -i "s/rtp-ip.*/rtp-ip\" value=\"$MY_IP\"\/\>/g" $SIPINTERFACE
+
+echo "IP: Kamailio"
+sed -i "s/\!MY_IP_ADDRESS.*/\!MY_IP_ADDRESS\!$MY_IP\!g\"/g" $KAMLOCAL
+echo 'id(int,auto) setid(int) destination(string) flags(int) priority(int) attrs(string) description(string)' > $KAMDIS
+echo "1:1:sip\:$MY_IP\:11000:0:1::" >> $KAMDIS
+
+echo "IP: Monster-UI"
+sed -i "s|default: 'http.*|default: 'http://$MY_IP:8000/v2/',|g" $MONSTER_UI_PATH/src/js/config.js
+
+echo Done
+echo

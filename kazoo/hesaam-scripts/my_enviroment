@@ -1,0 +1,50 @@
+#MY_IP=`ip addr show eth1 | grep -oP 'inet \K([0-9\\.]+)'`
+MY_IP=`ip route get 8.8.8.8 | awk '/8.8.8.8/ {print $NF}'`
+
+REALM=`hostname -f`
+
+COUCHDB_DBPATH="/srv/couchdb/db"
+KAZOO_SOUNDS="/opt/kazoo-sounds/kazoo-core/en/us"
+
+SIPINTERFACE="/etc/kazoo/freeswitch/sip_profiles/sipinterface_1.xml"
+KAMLOCAL="/etc/kazoo/kamailio/local.cfg"
+KAMDIS="/etc/kazoo/kamailio/dbtext/dispatcher"
+
+
+## monster-ui vars
+MONS_REPO_BASE_URL="git@github.com:2600hz/monster-ui"
+HTTP_PREFIX_DIR="/srv/http"
+MONSTER_UI_PATH="$HTTP_PREFIX_DIR/monster-ui"
+MOSNTER_APPS_DIR="$MONSTER_UI_PATH/src/apps"
+
+MOSNTER_APPS_PRIVATE="debug tasks cluster port websockets carriers provisioner reporting branding conferences mobile voicemails fax operator pivot dialplans callqueues userportal callqueues-reporting blacklists duo auth-security integration-aws call-recording invoices cdrs callqueues service-planner integration-google-drive"
+MOSNTER_APPS="callflows voip pbxs accounts webhooks numbers $MOSNTER_APPS_PRIVATE"
+
+function update_repo {
+    echo -e "  \033[37mupdating to latest\033[0m \033[35m$1\033[0m"
+    pushd $1 > /dev/null
+    # git reset --hard HEAD~
+    git pull
+    popd > /dev/null
+    echo -e "  \033[37mupdated to latest\033[0m \033[35m$1\033[0m"
+}
+
+function setup_repo {
+    if [ ! -d $1 ]; then
+        echo -e "  \033[37mcloning\033[0m \033[35m$1\033[0m \033[37minto\033[0m \033[33m$(pwd)/$1\033[0m"
+        git clone "$MONS_REPO_BASE_URL-$1.git" $1
+    else
+        update_repo $1
+    fi
+}
+
+function setup_monster_apps_repos {
+    pushd $MOSNTER_APPS_DIR > /dev/null
+    for app in $MOSNTER_APPS; do
+        setup_repo $app
+        echo ""
+    done
+    popd > /dev/null
+}
+
+#. $(which shml)

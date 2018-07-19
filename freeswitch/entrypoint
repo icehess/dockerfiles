@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -e
+
+/usr/sbin/kazoo-freeswitch prepare
+
+ls -laF /usr/bin/freeswitch
+
+exec "$@"

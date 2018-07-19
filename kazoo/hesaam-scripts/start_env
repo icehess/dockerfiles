@@ -1,0 +1,29 @@
+#!/bin/sh
+
+. /opt/scripts/my_enviroment
+
+sh /opt/scripts/patch_ip
+
+echo ":: Starting epmd"
+epmd -daemon
+
+echo ":: Restarting HAProxy"
+systemctl restart haproxy
+
+echo ":: Restarting RabbitMQ"
+systemctl restart rabbitmq
+
+echo ":: Restarting CouchDB"
+systemctl restart couchdb
+
+echo ":: Restarting FreeSWITCH"
+systemctl restart freeswitch
+
+echo ":: Restarting Kamailio"
+#ps aux | grep [k]am >/dev/null && kamctl restart || kamctl start
+systemctl restart kamailio
+
+echo ":: Restarting mosnter-ui"
+pushd $MONSTER_UI_PATH > /dev/null
+gulp 2>&1 &
+popd > /dev/null

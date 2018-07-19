@@ -1,0 +1,23 @@
+#!/bin/sh
+
+. /opt/scripts/my_enviroment
+
+echo ":: Stopping monster-ui"
+killall -9 gulp
+
+echo ":: Stopping FreeSWITCH"
+systemctl stop freeswitch
+
+echo ":: Stopping Kamailio"
+systemctl stop kamailio
+
+echo ":: Stopping CouchDB"
+systemctl stop couchdb
+
+echo ":: Stopping RabbitMQ"
+systemctl stop rabbitmq
+
+echo ":: Stopping HAProxy"
+systemctl stop haproxy
+
+epmd -kill

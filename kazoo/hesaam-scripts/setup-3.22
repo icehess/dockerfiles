@@ -1,0 +1,24 @@
+#!/bin/bash
+
+. /opt/scripts/my_enviroment
+
+ln -sf $COUCHDB_DBPATH/_dbs.couch $COUCHDB_DBPATH/dbs.couch
+ln -sf $COUCHDB_DBPATH/_nodes.couch $COUCHDB_DBPATH/nodes.couch
+ln -sf $COUCHDB_DBPATH/_replicator.couch $COUCHDB_DBPATH/replicator.couch
+ln -sf $COUCHDB_DBPATH/_users.couch $COUCHDB_DBPATH/users.couch
+
+. /opt/erlang/R15B03-1/activate
+systemctl restart couchdb
+sleep 10
+
+MONSTER_UI_PATH="$HTTP_PREFIX_DIR/22.3-monster-ui"
+MOSNTER_APPS_DIR="$MONSTER_UI_PATH/apps"
+
+/opt/22.3-oozak/utils/sup/sup whistle_media_maintenance import_prompts $KAZOO_SOUNDS en-us
+/opt/22.3-oozak/utils/sup/sup -n ecallmgr ecallmgr_maintenance add_fs_node freeswitch@$REALM
+/opt/22.3-oozak/utils/sup/sup -n ecallmgr ecallmgr_maintenance allow_sbc $REALM $MY_IP
+/opt/22.3-oozak/utils/sup/sup crossbar_maintenance create_account admin $REALM admin admin
+/opt/22.3-oozak/utils/sup/sup crossbar_maintenance init_apps $MOSNTER_APPS_DIR http://$MY_IP:8000/v2
+/opt/22.3-oozak/utils/sup/sup crossbar_maintenance start_module cb_temporal_rules_sets
+/opt/22.3-oozak/utils/sup/sup crossbar_maintenance start_module cb_port_requests
+
