@@ -2,12 +2,13 @@ version: '3.5'
 
 x-node-env:
   &kz-env
+    TERM: screen-256color
     KAZOO_COOKIE: change_me
     LC_CTYPE: en_US.UTF-8
     LANG: en_US.UTF-8
     CODE_LOADING_MODE: interactive
     RELX_REPLACE_OS_VARS: "true"
-    PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/kazoo/app/_rel/kazoo/bin"
+    PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/kazoo/_rel/kazoo/bin"
 
 x-devnode-cfg:
   &kz-dev
@@ -61,7 +62,7 @@ services:
       - kazoo
 
   kazoo_apps:
-    image: ${KZ_DEV_BASE_IMAGE:-kz-dev-base:21}
+    image: ${KZ_DEV_BASE_IMAGE:-kz-dev-base:20}
     environment:
        << : *kz-env
        KAZOO_NODE: kazoo_apps
@@ -105,7 +106,8 @@ services:
     hostname: 'mailcatcher-{{.Task.Slot}}.{{index .Service.Labels "com.docker.stack.namespace"}}'
     image: 'schickling/mailcatcher'
     ports:
-      - "1080"
+      - target: 1080
+        mode: host
       - "1025"
     networks:
       - kazoo
