@@ -12,7 +12,7 @@ x-node-env:
 x-devnode-cfg:
   &kz-dev
     - type: bind
-      source: ${KAZOO_SRC_PATH:-${HOME}/work/2600hz/kazoo/master}
+      source: ${KAZOO_SRC_PATH:-/home/hesaam/work/2600hz/kazoo/master}
       target: /opt/kazoo
       read_only: false
     - type: bind
@@ -20,7 +20,7 @@ x-devnode-cfg:
       target: /etc/kazoo/config.ini
       read_only: true
     - type: bind
-      source: ${KAZOO_SOUNDS_PATH:-${HOME}/work/2600hz/kazoo/sounds/kazoo-core}
+      source: ${KAZOO_SOUNDS_PATH:-/home/hesaam/work/2600hz/kazoo/sounds/kazoo-core}
       target: /opt/sounds
       read_only: true
 
@@ -61,13 +61,12 @@ services:
       - kazoo
 
   kazoo_apps:
-    image: ${KZ_DEV_BASE_IMAGE:-kz-dev-base}
+    image: ${KZ_DEV_BASE_IMAGE:-kz-dev-base:21}
     environment:
        << : *kz-env
-       KAZOO_NODE: apps
-       NODE_NAME: apps
-       REL: apps
-       KAZOO_APPS: ${KAZOO_APPS:-"blackhole,callflow,cdr,conference,crossbar,fax,hangups,media_mgr,milliwatt,omnipresence,pivot,registrar,reorder,stepswitch,sysconf,tasks,teletype,trunkstore,webhooks"}
+       KAZOO_NODE: kazoo_apps
+       NODE_NAME: kazoo+apps
+       REL: kazoo_apps
     volumes: *kz-dev
     ports:
       - target: 11500
@@ -76,29 +75,31 @@ services:
         mode: host
       - target: 5555
         mode: host
+      - target: 8001 # GraphQL
+        mode: host
     hostname: 'kazoo-{{.Task.Slot}}.{{index .Service.Labels "com.docker.stack.namespace"}}'
     tty: true
     command: ["bash"]
     networks:
       - kazoo
 
-  kazoo_ecallmgr:
-    image: ${KZ_DEV_BASE_IMAGE:-kz-dev-base}
-    environment:
-       << : *kz-env
-       KAZOO_NODE: ecallmgr
-       NODE_NAME: ecallmgr
-       REL: ecallmgr
-       KAZOO_APPS: "ecallmgr"
-    hostname: 'callmgr-{{.Task.Slot}}.{{index .Service.Labels "com.docker.stack.namespace"}}'
-    volumes: *kz-dev
-    ports:
-      - target: 11500
-        mode: host
-    command: ["bash"]
-    tty: true
-    networks:
-      - kazoo
+  # kazoo_ecallmgr:
+  #   image: ${KZ_DEV_BASE_IMAGE:-kz-dev-base}
+  #   environment:
+  #      << : *kz-env
+  #      KAZOO_NODE: ecallmgr
+  #      NODE_NAME: ecallmgr
+  #      REL: ecallmgr
+  #      KAZOO_APPS: "ecallmgr"
+  #   hostname: 'callmgr-{{.Task.Slot}}.{{index .Service.Labels "com.docker.stack.namespace"}}'
+  #   volumes: *kz-dev
+  #   ports:
+  #     - target: 11500
+  #       mode: host
+  #   command: ["bash"]
+  #   tty: true
+  #   networks:
+  #     - kazoo
 
   mailcatcher:
     hostname: 'mailcatcher-{{.Task.Slot}}.{{index .Service.Labels "com.docker.stack.namespace"}}'
@@ -109,7 +110,7 @@ services:
     networks:
       - kazoo
 
-  networks:
-    kazoo:
-      attachable: true
+networks:
+  kazoo:
+    attachable: true
 
