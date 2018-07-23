@@ -12,7 +12,7 @@ RUN apt-get install -y \
     ## editors and shell
     neovim vim emacs-nox ctags bash-completion tmux silversearcher-ag colordiff \
     ## useful tools
-    sed strace tcpdump net-tools ntpdate python \
+    sed strace tcpdump net-tools ntpdate python dnsutils \
     ## Kazoo dependecies
     zip unzip libexpat1-dev htmldoc sox libsox-fmt-all ghostscript \
     imagemagick libtiff-tools libreoffice-common
