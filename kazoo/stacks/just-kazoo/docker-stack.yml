@@ -17,13 +17,19 @@ x-devnode-cfg:
       target: /opt/kazoo
       read_only: false
     - type: bind
-      source: ./config.ini
-      target: /etc/kazoo/config.ini
-      read_only: true
-    - type: bind
       source: ${KAZOO_SOUNDS_PATH:-/home/hesaam/work/2600hz/kazoo/sounds/kazoo-core}
       target: /opt/sounds
       read_only: true
+
+volumes:
+  couchdb_data:
+    name: '{{.Service.Name}}-{{.Task.Slot}}-data'
+
+configs:
+  kazoo_config_ini:
+    file: ./config.ini
+  couchdb_cluster_ini:
+    file: ./couchdb_cluster.ini
 
 services:
 
@@ -34,58 +40,58 @@ services:
       NODENAME: 'couchdb.{{.Task.Slot}}'
     ports:
       - target: 9100
-      # - target: 5984
+      - target: 5984
       - target: 5986
     deploy:
       mode: replicated
-    # configs:
-      # - source: couchdb_cluster.ini
-      #   target:
-    volumes:
-      - type: bind
-        source: ./couchdb_cluster.ini
+    configs:
+      - source: couchdb_cluster_ini
         target: /opt/couchdb/etc/local.d/cluster.ini
-      - type: bind
-        source: "./data/"
+        uid: '5984'
+        gid: '5984'
+    volumes:
+      - type: volume
+        source: 'couchdb_data'
         target: "/opt/couchdb/data"
-      # - type: ${COUCHDB_VOL_TYPE:-tmpfs}
-      #   target: ${COUCHDB_VOL_TARGET:-/opt/couchdb/data}
     networks:
-      - kazoo
+      kazoo:
+        aliases:
+          - 'couchdb.{{.Task.Slot}}'
 
-  # rabbitmq:
-  #   image: rabbitmq:3-management
-  #   hostname: 'rabbitmq.{{.Task.Slot}}'
-  #   ports:
-  #     - target: 15672 # management UI
-  #       mode: host
-  #     - target: 5672 # AMQP port
-  #       mode: host
-  #   networks:
-  #     - kazoo
+  rabbitmq:
+    image: rabbitmq:3-management
+    hostname: 'rabbitmq.{{.Task.Slot}}'
+    ports:
+      - target: 15672 # management UI
+      - target: 5672 # AMQP port
+    networks:
+      kazoo:
+        aliases:
+          - 'rabbitmq.{{.Task.Slot}}'
 
-  # kazoo_apps:
-  #   image: ${KZ_DEV_BASE_IMAGE:-kz-dev-base:20}
-  #   hostname: 'kazoo_apps.{{.Task.Slot}}'
-  #   environment:
-  #      << : *kz-env
-  #      KAZOO_NODE: kazoo_apps
-  #      NODE_NAME: kazoo_apps
-  #      REL: kazoo_apps
-  #   volumes: *kz-dev
-  #   ports:
-  #     - target: 11500
-  #       mode: host
-  #     - target: 8000
-  #       mode: host
-  #     - target: 5555
-  #       mode: host
-  #     - target: 8001 # GraphQL
-  #       mode: host
-  #   tty: true
-  #   command: ["bash"]
-  #   networks:
-  #     - kazoo
+  kazoo_apps:
+    image: ${KZ_DEV_BASE_IMAGE:-kz-dev-base:20}
+    hostname: 'kazoo_apps.{{.Task.Slot}}'
+    environment:
+       << : *kz-env
+       KAZOO_NODE: kazoo_apps
+       NODE_NAME: kazoo_apps
+       REL: kazoo_apps
+    volumes: *kz-dev
+    configs:
+      - source: kazoo_config_ini
+        target: /etc/kazoo/config.ini
+    ports:
+      - target: 11500
+      - target: 8000
+      - target: 5555
+      - target: 8001 # GraphQL
+    tty: true
+    command: ["bash"]
+    networks:
+      kazoo:
+        aliases:
+          - 'kazoo_apps.{{.Task.Slot}}'
 
   # kazoo_ecallmgr:
   #   image: ${KZ_DEV_BASE_IMAGE:-kz-dev-base}
@@ -97,13 +103,17 @@ services:
   #      REL: ecallmgr
   #      KAZOO_APPS: "ecallmgr"
   #   volumes: *kz-dev
+  #   configs:
+  #     - source: kazoo_config_ini
+  #       target: /etc/kazoo/config.ini
   #   ports:
   #     - target: 11500
-  #       mode: host
   #   command: ["bash"]
   #   tty: true
   #   networks:
-  #     - kazoo
+  #     kazoo:
+  #       aliases:
+  #         - 'kazoo_ecallmgr.{{.Task.Slot}}'
 
   monster-ui:
     image: ${MONSTER_IMG:-node:8.11.3-stretch}
@@ -124,19 +134,19 @@ services:
         target: "/su-exec"
     ports:
       - target: 3000
-        mode: host
     tty: true
     entrypoint: /monster-entrypoint.sh
     command: ["/opt/monster-ui/node_modules/gulp/bin/gulp.js"]
     networks:
-      - kazoo
+      kazoo:
+        aliases:
+          - 'monster-ui.{{.Task.Slot}}'
 
   # mailcatcher:
   #   image: 'schickling/mailcatcher'
   #   ports:
   #     - target: 1080
-  #       mode: host
-  #     - "1025"
+  #     - target: 1025
   #   networks:
   #     - kazoo
 
