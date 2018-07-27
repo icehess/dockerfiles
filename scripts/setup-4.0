@@ -1,0 +1,8 @@
+#!/bin/bash
+
+sup kazoo_media_maintenance import_prompts /opt/sounds/en/us en-us
+#sup -n ecallmgr ecallmgr_maintenance add_fs_node freeswitch@$REALM
+#sup -n ecallmgr ecallmgr_maintenance allow_sbc $REALM $MY_IP
+sup crossbar_maintenance create_account admin `hostname -f` admin admin
+sup crossbar_maintenance init_apps /opt/monster-ui/src/apps
+
