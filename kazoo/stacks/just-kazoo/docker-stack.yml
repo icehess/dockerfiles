@@ -20,6 +20,14 @@ x-devnode-cfg:
       source: ${KAZOO_SOUNDS_PATH:-/home/hesaam/work/2600hz/kazoo/sounds/kazoo-core}
       target: /opt/sounds
       read_only: true
+    - type: bind
+      source: /home/hesaam/work/2600hz/kazoo/docker/scripts
+      target: /opt/scripts
+      read_only: true
+    - type: bind
+      source: /home/hesaam/work/2600hz/kazoo/monster-ui
+      target: /opt/monster-ui
+      read_only: true
 
 volumes:
   couchdb_data:
