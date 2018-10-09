@@ -10,7 +10,7 @@ ENV APT_LISTCHANGES_FRONTEND=none
 RUN apt-get update -y
 RUN apt-get install -y \
     ## editors and shell
-    neovim vim emacs-nox ctags bash-completion tmux silversearcher-ag colordiff \
+    vim emacs-nox ctags bash-completion tmux silversearcher-ag colordiff \
     ## useful tools
     sed strace tcpdump net-tools ntpdate python dnsutils \
     ## Kazoo dependecies
