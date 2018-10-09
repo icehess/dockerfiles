@@ -49,7 +49,9 @@ services:
     ports:
       - target: 9100
       - target: 5984
+        mode: host
       - target: 5986
+        mode: host
     deploy:
       mode: replicated
     configs:
@@ -71,7 +73,9 @@ services:
     hostname: 'rabbitmq.{{.Task.Slot}}'
     ports:
       - target: 15672 # management UI
+        mode: host
       - target: 5672 # AMQP port
+        mode: host
     networks:
       kazoo:
         aliases:
@@ -91,9 +95,13 @@ services:
         target: /etc/kazoo/config.ini
     ports:
       - target: 11500
+        mode: host
       - target: 8000
+        mode: host
       - target: 5555
+        mode: host
       - target: 8001 # GraphQL
+        mode: host
     tty: true
     command: ["bash"]
     networks:
@@ -142,6 +150,7 @@ services:
         target: "/su-exec"
     ports:
       - target: 3000
+        mode: host
     tty: true
     entrypoint: /monster-entrypoint.sh
     command: ["/opt/monster-ui/node_modules/gulp/bin/gulp.js"]
@@ -150,13 +159,15 @@ services:
         aliases:
           - 'monster-ui.{{.Task.Slot}}'
 
-  # mailcatcher:
-  #   image: 'schickling/mailcatcher'
-  #   ports:
-  #     - target: 1080
-  #     - target: 1025
-  #   networks:
-  #     - kazoo
+  mailcatcher:
+    image: 'schickling/mailcatcher'
+    ports:
+      - target: 1080
+        mode: host
+      - target: 1025
+        mode: host
+    networks:
+      - kazoo
 
 networks:
   kazoo:

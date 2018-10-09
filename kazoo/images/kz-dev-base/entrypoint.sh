@@ -1,5 +1,5 @@
 #!/bin/bash
-set -o xtrace
+
 # Add local user
 # Either use the LOCAL_USER_ID if passed in at runtime or fallback to 1000
 
