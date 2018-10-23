@@ -22,6 +22,7 @@ RUN set -ex \
                    libvo-amrwbenc-dev \
                    libwebrtc-audio-processing-dev \
                    portaudio19-dev \
+                   python-dev \
                    uuid-dev \
                    swig \
         \
@@ -44,24 +45,25 @@ RUN set -ex \
         && make -j $(nproc) dep \
         && make -j $(nproc) \
         \
-        && [ -n "$PJ_PKG_DIR" ] && mkdir "$PJ_PKG_DIR" \
+        && (([ "x$PJ_PKG_DIR" != "x" ] && mkdir "$PJ_PKG_DIR") || true) \
         && install -D -m755 pjsip-apps/bin/pjsua-*gnu "$PJ_PKG_DIR"/usr/bin/pjsua \
         && make install DESTDIR="$PJ_PKG_DIR" install \
         \
-        && cd pjsip_apps/src/swig \
-        && make symboles.i \
+        && cd /usr/src/pjsip/pjsip-apps/src/swig \
+        && make symbols.i \
         && cd python \
         && SRC_DIR="../../../../pjsip/include" \
         && SWIG_FLAGS='-I../../../../pjlib/include -I../../../../pjlib-util/include -I../../../../pjmedia/include -I../../../../pjsip/include -I../../../../pjnath/include -c++' \
                 SRCS="$SRC_DIR/pjsua2/endpoint.hpp $SRC_DIR/pjsua2/types.hpp" \
                 make \
-        && [ -n "$PJ_PKG_DIR" ] && (python setup.py install --root="$PJ_PKG_DIR" || exit 1) \
-                || (python setup.py install || exit 1) \
+        && (( [ "x$PJ_PKG_DIR" != "x" ] && python setup.py install --root="$PJ_PKG_DIR") || python setup.py install ) \
         \
         && cd ../../python \
         && python2 setup.py build \
-        && [ -n "$PJ_PKG_DIR" ] && (python2 setup.py install --root="$PJ_PKG_DIR" || exit 1) \
-                || (python2 setup.py install || exit 1) \
-        && python -c "from $PJ_PKG_DIR/usr/local/lib/python3.6/site-packages import pjsua2" \
-        && python2 -c "from $PJ_PKG_DIR/usr/local/lib/python2.7/site-packages import pjsua" \
+        && (( [ "x$PJ_PKG_DIR" != "x" ] && python2 setup.py install --root="$PJ_PKG_DIR") || python2 setup.py install) \
+        \
+        && cd "$PJ_PKG_DIR/usr/local/lib/python3.6/site-packages" \
+        && python -c "import pjsua2" \
+        && cd "$PJ_PKG_DIR/usr/local/lib/python2.7/site-packages" \
+        && python2 -c "import pjsua" \
         && rm -rf /usr/src/pjsip
