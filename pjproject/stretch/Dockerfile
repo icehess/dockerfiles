@@ -29,7 +29,6 @@ RUN set -ex \
         && cd /usr/src/pjsip \
         && curl -vsL https://www.pjsip.org/release/$PJSIP_VERSION/pjproject-$PJSIP_VERSION.tar.bz2 | \
             tar --strip-components 1 -xj \
-        && cd pjproject-$PJSIP_VERSION \
         \
         && CFLAGS="-O2 -DNDEBUG" \
         && ./configure --enable-shared \
