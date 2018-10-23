@@ -10,27 +10,18 @@ RUN set -ex \
         && DEBIAN_FRONTEND=noninteractive \
         && apt-get update \
         && apt-get install -y --no-install-recommends \
-                   libavcodec-dev \
-                   libavdevice-dev \
-                   libavformat-dev \
-                   libavutil-dev \
                    libgsm1-dev \
                    libopencore-amrnb-dev \
                    libopencore-amrwb-dev \
                    libopus-dev \
                    libsamplerate0-dev \
-                   libsdl2-dev \
                    libspeex-dev \
                    libspeexdsp-dev \
                    libsrtp2-dev \
                    libssl-dev \
-                   libswscale-dev \
-                   libv4l-dev \
                    libvo-amrwbenc-dev \
                    libwebrtc-audio-processing-dev \
-                   pkg-kde-tools \
                    portaudio19-dev \
-                   python-dev \
                    uuid-dev \
                    swig \
         \
@@ -47,6 +38,8 @@ RUN set -ex \
                 --with-external-pa \
                 --with-external-gsm \
                 --enable-libsamplerate \
+                --disable-video \
+                --disable-sound \
                 --prefix=/usr \
         \
         && make -j $(nproc) dep \
