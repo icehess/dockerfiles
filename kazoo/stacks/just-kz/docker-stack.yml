@@ -35,9 +35,9 @@ volumes:
 
 configs:
   kazoo_config_ini:
-    file: ./config.ini
+    file: /home/hesaam/work/2600hz/kazoo/docker/kazoo/stacks/just-kz/config.ini
   couchdb_cluster_ini:
-    file: ./couchdb_cluster.ini
+    file: /home/hesaam/work/2600hz/kazoo/docker/kazoo/stacks/just-kz/couchdb_cluster.ini
 
 services:
 
@@ -54,12 +54,10 @@ services:
         mode: host
     deploy:
       mode: replicated
-    configs:
-      - source: couchdb_cluster_ini
-        target: /opt/couchdb/etc/local.d/cluster.ini
-        uid: '5984'
-        gid: '5984'
     volumes:
+      - type: bind
+        source: ${COUDB_CONFIG_PATH:-/home/hesaam/work/2600hz/kazoo/docker/kazoo/stacks/just-kz/couchdb_cluster.ini}
+        target: /opt/couchdb/etc/local.d/20-cluster.ini
       - type: volume
         source: 'couchdb_data'
         target: "/opt/couchdb/data"
