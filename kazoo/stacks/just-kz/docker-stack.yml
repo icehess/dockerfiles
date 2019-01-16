@@ -80,7 +80,7 @@ services:
           - 'rabbitmq.{{.Task.Slot}}'
 
   kazoo_apps:
-    image: ${KZ_DEV_BASE_IMAGE:-kz-dev-base:20}
+    image: ${KZ_DEV_BASE_IMAGE:-kz-dev-base:19}
     hostname: 'kazoo_apps.{{.Task.Slot}}'
     environment:
        << : *kz-env
