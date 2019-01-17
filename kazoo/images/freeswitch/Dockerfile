@@ -5,17 +5,17 @@ ARG FS_SOURCE_FILENAME
 ARG FS_SOURCE_URL
 
 RUN apk update \
-        && apk add alpine-sdk vim swig \
-        && ln `which swig` `which swig`3.0 \
+        && apk add alpine-sdk vim \
         && mkdir -p /var/cache/distfiles \
         && chmod a+w /var/cache/distfiles \
         && adduser -D freeswitch \
         && addgroup freeswitch abuild
 
+COPY apkbuild /home/freeswitch/apkbuild
+RUN chown -R freeswitch:freeswitch /home/freeswitch/apkbuild
+
 USER freeswitch
 WORKDIR /home/freeswitch
-
-COPY apkbuild /home/freeswitch/apkbuild
 
 ENV FS_VER=${FS_VER}
 ENV FS_HASH=${FS_HASH}
