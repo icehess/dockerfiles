@@ -1,39 +1,13 @@
-FROM alpine as build
-ARG FS_VER=1.6.20
-ARG FS_HASH
-ARG FS_SOURCE_FILENAME
-ARG FS_SOURCE_URL
+FROM debian:stretch
 
-RUN apk update \
-        && apk add alpine-sdk vim \
-        && mkdir -p /var/cache/distfiles \
-        && chmod a+w /var/cache/distfiles \
-        && adduser -D freeswitch \
-        && addgroup freeswitch abuild
+ENV DEBIAN_FRONTEND=noninteractive
+ENV APT_LISTCHANGES_FRONTEND=none
 
-COPY apkbuild /home/freeswitch/apkbuild
-RUN chown -R freeswitch:freeswitch /home/freeswitch/apkbuild
-
-USER freeswitch
-WORKDIR /home/freeswitch
-
-ENV FS_VER=${FS_VER}
-ENV FS_HASH=${FS_HASH}
-ENV FS_SOURCE_FILENAME=${FS_SOURCE_FILENAME}
-ENV FS_SOURCE_URL=${FS_SOURCE_URL}
-
-RUN abuild-keygen -a -i \
-        && cd apkbuild \
-        && abuild checksum \
-        && abuild -r
-
-
-FROM alpine as freeswitch
-COPY --from=build /home/freeswitch/packages/freeswitch/x86_64/* /apks/x86_64/
-
-RUN echo -e "/apks\n$(cat /etc/apk/repositories)" > /etc/apk/repositories \
-        && apk add --update --allow-untrusted \
-        bash curl wget iproute2 \
-        freeswitch=${FS_VER}-r0 freeswitch-flite=${FS_VER}-r0
+RUN apt-get update -y \
+        && apt-get install -y vim curl wget gnupg2 \
+        && curl https://files.freeswitch.org/repo/deb/freeswitch-1.8/fsstretch-archive-keyring.asc | apt-ket add - \
+        && echo "deb http://files.freeswitch.org/repo/deb/freeswitch-1.8/ stretch main" > /etc/apt/sources.list.d/freeswitch.list \
+        && echo "deb-src http://files.freeswitch.org/repo/deb/freeswitch-1.8/ stretch main" >> /etc/apt/sources.list.d/freeswitch.list \
+        && apt-get update && apt-get install -y freeswitch-meta-all
 
 CMD ["freeswitch", "-nonat"]
