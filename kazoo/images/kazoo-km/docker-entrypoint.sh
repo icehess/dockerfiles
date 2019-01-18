@@ -19,6 +19,10 @@ KZ_TRACE=${KZ_TRACE:-false}
 SIP_TRACE_URI=${SIP_TRACE_URI:-kazoo}
 SIP_TRACE_PORT=${SIP_TRACE_PORT:-9060}
 
+KZ_WEBSOCKET_ENABLED=${KZ_WEBSOCKET_ENABLED:-false}
+PUSHER_ROLE=${PUSHER_ROLE:-true}
+PRESENCE_NOTIFY_SYNC_ROLE=${PRESENCE_NOTIFY_SYNC_ROLE:-true}
+
 WSS_DOMAIN=${WSS_DOMAIN:-`hostname -d`}
 
 MY_ADVERTISED_IP_ADDRESS=${MY_ADVERTISED_IP_ADDRESS:-`curl -s checkip.amazonaws.com`}
@@ -50,27 +54,64 @@ fi
 
 if [ "$KZ_TRACE" = "true" ]; then
     KZ_TRACE=1
+    KZ_TRACE_ROLE="#!trydef SIP_TRACE_ROLE"
 else
     KZ_TRACE=0
+    KZ_TRACE_ROLE=""
 fi
 
-cat > /etc/kamailio/dynamic.cfg <<EOF
+if [ "$KZ_WEBSOCKET_ENABLED" = "true" ]; then
+    KZ_WEBSOCKET_ROLE="#!trydef WEBSOCKETS_ROLE"
+else
+    KZ_WEBSOCKET_ROLE=""
+fi
 
-## DYNAMIC CONFIGURATION ##
+if [ "$PRESENCE_NOTIFY_SYNC_ROLE" = "true" ]; then
+    PRESENCE_NOTIFY_SYNC_ROLE="#!trydef PRESENCE_NOTIFY_SYNC_ROLE"
+else
+    PRESENCE_NOTIFY_SYNC_ROLE=""
+fi
 
-#!trydef PUSHER_ROLE
-#!trydef PRESENCE_NOTIFY_SYNC_ROLE
-#!define KZ_DISPATCHER_PROBE_MODE 3
+if [ "$PUSHER_ROLE" = "true" ]; then
+    PUSHER_ROLE="#!trydef PUSHER_ROLE"
+else
+    PUSHER_ROLE=""
+fi
+
+cat > /etc/kamailio/local.cfg <<EOF
+################################################################################
+## ROLES
+################################################################################
+## Enabled Roles
+#!trydef DISPATCHER_ROLE
+#!trydef NAT_TRAVERSAL_ROLE
+#!trydef REGISTRAR_ROLE
+#!trydef PRESENCE_ROLE
+#!trydef RESPONDER_ROLE
+#!trydef NODES_ROLE
+${KZ_WEBSOCKET_ROLE}
+${KZ_TRACE_ROLE}
+${PUSHER_ROLE}
+${PRESENCE_NOTIFY_SYNC_ROLE}
+
+## Disabled Roles - remove all but the last '#' to enable
+# # #!trydef TRAFFIC_FILTER_ROLE
+# # #!trydef TLS_ROLE
+# # #!trydef ANTIFLOOD_ROLE
+# # #!trydef RATE_LIMITER_ROLE
+# # #!trydef ACL_ROLE
+# # #!trydef MESSAGE_ROLE
+# # #!trydef REGISTRAR_SYNC_ROLE
 
 #!substdef "!MY_HOSTNAME!${MY_HOSTNAME}!g"
 #!substdef "!MY_IP_ADDRESS!${MY_IP_ADDRESS}!g"
 #!substdef "!MY_AMQP_ZONE!${AMQP_ZONE}!g"
-#!substdef "!MY_WEBSOCKET_DOMAIN!${WSS_DOMAIN}!g"
 #!substdef "!MY_AMQP_URL!amqp://${AMQP_USER}:${AMQP_PASS}@${AMQP_SERVER}:5672${AMQP_VIRTUAL_SERVER}!g"
+
+#!substdef "!MY_WEBSOCKET_DOMAIN!${WSS_DOMAIN}!g"
 
 ${DO_ADVERTISE}
 ${DO_PUBLIC}
-
 
 #!ifdef PUBLIC_LISTENER
 #!substdef "!MY_OUTSIDE_IP_ADDRESS!${MY_OUTSIDE_IP_ADDRESS}!g"
@@ -81,6 +122,10 @@ ${DO_PUBLIC}
 #!substdef "!MY_OUTSIDE_IP_ADDRESS!${MY_OUTSIDE_IP_ADDRESS}!g"
 #!substdef "!MY_ADVERTISED_IP_ADDRESS!${MY_ADVERTISED_IP_ADDRESS}!g"
 #!endif
+
+### Kazoo DB
+#!substdef "!KAZOO_DATA_DIR!/etc/kamailio/db!g"
+
 
 ################################################################################
 ## SIP traffic mirroring to SIP_TRACE server
@@ -97,12 +142,27 @@ ${DO_PUBLIC}
 #!trydef KZ_TRACE_EXTERNAL_OUTGOING 1
 
 
-#!define DYNAMIC_SETTINGS
+include_file "defs.cfg"
 
-#!substdef "!KAZOO_DATA_DIR!/etc/kamailio/db!g"
+#!substdef "!UDP_SIP!udp:MY_IP_ADDRESS:5060!g"
+#!substdef "!TCP_SIP!tcp:MY_IP_ADDRESS:5060!g"
+#!substdef "!TLS_SIP!tls:MY_IP_ADDRESS:5061!g"
+#!substdef "!UDP_ALG_SIP!udp:MY_IP_ADDRESS:7000!g"
+#!substdef "!TCP_ALG_SIP!tcp:MY_IP_ADDRESS:7000!g"
+#!substdef "!TLS_ALG_SIP!tls:MY_IP_ADDRESS:7001!g"
+#!substdef "!TCP_WS!tcp:MY_IP_ADDRESS:5064!g"
+#!substdef "!UDP_WS_SIP!udp:MY_IP_ADDRESS:5064!g"
+#!substdef "!TLS_WSS!tls:MY_IP_ADDRESS:5065!g"
+#!substdef "!UDP_WSS_SIP!udp:MY_IP_ADDRESS:5065!g"
+
+listen=UDP_SIP
+listen=TCP_SIP
+listen=UDP_ALG_SIP
+listen=TCP_ALG_SIP
+
 EOF
 >&2
 
-cat /etc/kamailio/dynamic.cfg
+cat /etc/kamailio/local.cfg
 echo "args : $@"
 exec "$@"
