@@ -107,27 +107,52 @@ services:
         aliases:
           - 'kazoo_apps.{{.Task.Slot}}'
 
-  # kazoo_ecallmgr:
-  #   image: ${KZ_DEV_BASE_IMAGE:-kz-dev-base}
-  #   hostname: 'kazoo_ecallmgr.{{.Task.Slot}}'
-  #   environment:
-  #      << : *kz-env
-  #      KAZOO_NODE: ecallmgr
-  #      NODE_NAME: ecallmgr
-  #      REL: ecallmgr
-  #      KAZOO_APPS: "ecallmgr"
-  #   volumes: *kz-dev
-  #   configs:
-  #     - source: kazoo_config_ini
-  #       target: /etc/kazoo/config.ini
-  #   ports:
-  #     - target: 11500
-  #   command: ["bash"]
-  #   tty: true
-  #   networks:
-  #     kazoo:
-  #       aliases:
-  #         - 'kazoo_ecallmgr.{{.Task.Slot}}'
+  kazoo_ecallmgr:
+    image: ${KZ_DEV_BASE_IMAGE:-kz-dev-base:19}
+    hostname: 'kazoo_ecallmgr.{{.Task.Slot}}'
+    environment:
+       << : *kz-env
+       KAZOO_NODE: ecallmgr
+       NODE_NAME: ecallmgr
+       REL: ecallmgr
+       KAZOO_APPS: "ecallmgr"
+    volumes: *kz-dev
+    configs:
+      - source: kazoo_config_ini
+        target: /etc/kazoo/config.ini
+    ports:
+      - target: 11500
+    command: ["bash"]
+    tty: true
+    networks:
+      kazoo:
+        aliases:
+          - 'kazoo_ecallmgr.{{.Task.Slot}}'
+
+  freeswitch:
+    image: icehess/kz-dev-fs:latest
+    hostname: 'freeswitch-{{.Task.Slot}}'
+    environment:
+       KZ_TRACE: "true"
+    networks:
+      kazoo:
+        aliases:
+          - 'kazoo_ecallmgr.{{.Task.Slot}}'
+
+  kamailio:
+    image: icehess/kz-dev-km:5.1.6
+    hostname: 'kamailio-{{.Task.Slot}}'
+    environment:
+       ENABLE_SERVICE_NAME: "false"
+       ENABLE_ADVERTISE: "false"
+       KZ_TRACE: "true"
+       KZ_WEBSOCKET_ENABLED: "true"
+       PUSHER_ROLE: "true"
+       PRESENCE_NOTIFY_SYNC_ROLE: "true"
+    networks:
+      kazoo:
+        aliases:
+          - 'kazoo_ecallmgr.{{.Task.Slot}}'
 
   monster-ui:
     image: ${MONSTER_IMG:-node:8.11.3-stretch}

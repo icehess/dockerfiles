@@ -22,7 +22,6 @@ RUN apt-get update -y \
                 freeswitch-mod-blacklist \
                 freeswitch-mod-callcenter \
                 freeswitch-mod-cdr-csv \
-                freeswitch-mod-cdr-sqlite \
                 freeswitch-mod-cidlookup \
                 freeswitch-mod-codec2 \
                 freeswitch-mod-commands \
@@ -92,9 +91,6 @@ RUN apt-get update -y \
                 freeswitch-mod-vmd \
                 freeswitch-mod-voicemail \
                 freeswitch-mod-voicemail-ivr \
-                freeswitch-mod-xml-cdr \
-                freeswitch-mod-xml-curl \
-                freeswitch-mod-xml-rpc \
                 freeswitch-mod-yaml \
                 freeswitch-mod-yuv \
                 freeswitch-music-default \
