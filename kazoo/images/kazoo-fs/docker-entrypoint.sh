@@ -9,5 +9,7 @@ if [ "$KZ_TRACE" = "true" ]; then
     sed -i '/sip-trace/a <param name="sip-capture" value="yes"/>' /etc/freeswitch/sip_profiles/sipinterface_1.xml
 fi
 
+/usr/bin/epmd -daemon
+
 echo "args : $@"
 exec "$@"
