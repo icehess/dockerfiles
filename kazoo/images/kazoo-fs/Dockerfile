@@ -11,3 +11,4 @@ RUN rm -rf /etc/freeswitch \
 
 ADD docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["freeswitch", "-nonat"]
