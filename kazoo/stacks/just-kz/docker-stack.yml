@@ -109,126 +109,28 @@ services:
         aliases:
           - 'kazoo_apps.{{.Task.Slot}}'
 
-  kazoo_ecallmgr:
-    image: ${KZ_DEV_BASE_IMAGE:-kz-dev-base:19}
-    hostname: 'kazoo_ecallmgr.{{.Task.Slot}}'
-    environment:
-       << : *kz-env
-       KAZOO_NODE: ecallmgr
-       NODE_NAME: ecallmgr
-       REL: ecallmgr
-       KAZOO_APPS: "ecallmgr"
-    volumes: *kz-dev
-    configs:
-      - source: kazoo_config_ini
-        target: /etc/kazoo/config.ini
-    ports:
-      - target: 11500
-        mode: host
-    command: ["bash"]
-    tty: true
-    networks:
-      kazoo:
-        aliases:
-          - 'kazoo_ecallmgr.{{.Task.Slot}}'
-
-  freeswitch:
-    image: icehess/kz-dev-fs:latest
-    hostname: 'freeswitch.{{.Task.Slot}}'
-    environment:
-       KZ_TRACE: "true"
-       FU_DOCKER_START: "16384"
-       FU_DOCKER_END: "16392"
-    ports: # range 16384-32768/udp
-      - published: 16384
-        target: 16384
-        protocol: udp
-        mode: host
-      - published: 16385
-        target: 16385
-        protocol: udp
-        mode: host
-      - published: 16386
-        target: 16386
-        protocol: udp
-        mode: host
-      - published: 16387
-        target: 16387
-        protocol: udp
-        mode: host
-      - published: 16388
-        target: 16388
-        protocol: udp
-        mode: host
-      - published: 16389
-        target: 16389
-        protocol: udp
-        mode: host
-      - published: 16390
-        target: 16390
-        protocol: udp
-        mode: host
-      - published: 16391
-        target: 16391
-        protocol: udp
-        mode: host
-      - published: 16392
-        target: 16392
-        protocol: udp
-        mode: host
-    networks:
-      # kazoo_public: {}
-      kazoo:
-        aliases:
-          - 'freeswitch.{{.Task.Slot}}'
-
-  kamailio:
-    image: icehess/kz-dev-km:latest
-    hostname: 'kamailio.{{.Task.Slot}}'
-    environment:
-       ENABLE_SERVICE_NAME: "false"
-       ENABLE_ADVERTISE: "false"
-       KZ_TRACE: "true"
-       KZ_WEBSOCKET_ENABLED: "true"
-       PUSHER_ROLE: "true"
-       PRESENCE_NOTIFY_SYNC_ROLE: "true"
-    ports:
-      - published: 5060 # SIP TCP
-        target: 5060
-        protocol: tcp
-        mode: host
-      - published: 5060 # SIP UDP
-        target: 5060
-        protocol: udp
-        mode: host
-      - published: 5061 # SSIP (SIP TLS)
-        target: 5061
-        protocol: tcp
-        mode: host
-      - published: 7000 # SIP ALG TCP
-        target: 7000
-        protocol: tcp
-        mode: host
-      - published: 7000 # SIP ALG UDP
-        target: 7000
-        protocol: udp
-        mode: host
-      - published: 7001 # SSIP ALG
-        target: 7001
-        protocol: tcp
-        mode: host
-      - published: 5064 # http/https/websocket
-        target: 5064
-        protocol: tcp
-        mode: host
-      - published: 5065 # http/https/websocket
-        target: 5065
-        protocol: tcp
-        mode: host
-    networks:
-      kazoo:
-        aliases:
-          - 'kamailio.{{.Task.Slot}}'
+  # kazoo_ecallmgr:
+  #   image: ${KZ_DEV_BASE_IMAGE:-kz-dev-base:19}
+  #   hostname: 'kazoo_ecallmgr.{{.Task.Slot}}'
+  #   environment:
+  #      << : *kz-env
+  #      KAZOO_NODE: ecallmgr
+  #      NODE_NAME: ecallmgr
+  #      REL: ecallmgr
+  #      KAZOO_APPS: "ecallmgr"
+  #   volumes: *kz-dev
+  #   configs:
+  #     - source: kazoo_config_ini
+  #       target: /etc/kazoo/config.ini
+  #   ports:
+  #     - target: 11500
+  #       mode: host
+  #   command: ["bash"]
+  #   tty: true
+  #   networks:
+  #     kazoo:
+  #       aliases:
+  #         - 'kazoo_ecallmgr.{{.Task.Slot}}'
 
   monster-ui:
     image: ${MONSTER_IMG:-node:8.11.3-stretch}
