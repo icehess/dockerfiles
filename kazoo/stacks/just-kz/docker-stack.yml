@@ -1,4 +1,4 @@
-version: '3.5'
+version: '3.7'
 
 x-node-env:
   &kz-env
@@ -92,11 +92,13 @@ services:
       - source: kazoo_config_ini
         target: /etc/kazoo/config.ini
     ports:
-      - target: 11500
+      - target: 11500 # Erlang
         mode: host
-      - target: 8000
+      - target: 8000 # Crossbar
         mode: host
-      - target: 5555
+      - target: 5555 # Websocket
+        mode: host
+      - target: 25 # Fax SMTP
         mode: host
       - target: 8001 # GraphQL
         mode: host
@@ -122,6 +124,7 @@ services:
         target: /etc/kazoo/config.ini
     ports:
       - target: 11500
+        mode: host
     command: ["bash"]
     tty: true
     networks:
@@ -131,17 +134,57 @@ services:
 
   freeswitch:
     image: icehess/kz-dev-fs:latest
-    hostname: 'freeswitch-{{.Task.Slot}}'
+    hostname: 'freeswitch.{{.Task.Slot}}'
     environment:
        KZ_TRACE: "true"
+       FU_DOCKER_START: "16384"
+       FU_DOCKER_END: "16392"
+    ports: # range 16384-32768/udp
+      - published: 16384
+        target: 16384
+        protocol: udp
+        mode: host
+      - published: 16385
+        target: 16385
+        protocol: udp
+        mode: host
+      - published: 16386
+        target: 16386
+        protocol: udp
+        mode: host
+      - published: 16387
+        target: 16387
+        protocol: udp
+        mode: host
+      - published: 16388
+        target: 16388
+        protocol: udp
+        mode: host
+      - published: 16389
+        target: 16389
+        protocol: udp
+        mode: host
+      - published: 16390
+        target: 16390
+        protocol: udp
+        mode: host
+      - published: 16391
+        target: 16391
+        protocol: udp
+        mode: host
+      - published: 16392
+        target: 16392
+        protocol: udp
+        mode: host
     networks:
+      # kazoo_public: {}
       kazoo:
         aliases:
-          - 'kazoo_ecallmgr.{{.Task.Slot}}'
+          - 'freeswitch.{{.Task.Slot}}'
 
   kamailio:
-    image: icehess/kz-dev-km:5.1.6
-    hostname: 'kamailio-{{.Task.Slot}}'
+    image: icehess/kz-dev-km:latest
+    hostname: 'kamailio.{{.Task.Slot}}'
     environment:
        ENABLE_SERVICE_NAME: "false"
        ENABLE_ADVERTISE: "false"
@@ -149,10 +192,43 @@ services:
        KZ_WEBSOCKET_ENABLED: "true"
        PUSHER_ROLE: "true"
        PRESENCE_NOTIFY_SYNC_ROLE: "true"
+    ports:
+      - published: 5060 # SIP TCP
+        target: 5060
+        protocol: tcp
+        mode: host
+      - published: 5060 # SIP UDP
+        target: 5060
+        protocol: udp
+        mode: host
+      - published: 5061 # SSIP (SIP TLS)
+        target: 5061
+        protocol: tcp
+        mode: host
+      - published: 7000 # SIP ALG TCP
+        target: 7000
+        protocol: tcp
+        mode: host
+      - published: 7000 # SIP ALG UDP
+        target: 7000
+        protocol: udp
+        mode: host
+      - published: 7001 # SSIP ALG
+        target: 7001
+        protocol: tcp
+        mode: host
+      - published: 5064 # http/https/websocket
+        target: 5064
+        protocol: tcp
+        mode: host
+      - published: 5065 # http/https/websocket
+        target: 5065
+        protocol: tcp
+        mode: host
     networks:
       kazoo:
         aliases:
-          - 'kazoo_ecallmgr.{{.Task.Slot}}'
+          - 'kamailio.{{.Task.Slot}}'
 
   monster-ui:
     image: ${MONSTER_IMG:-node:8.11.3-stretch}
@@ -182,17 +258,31 @@ services:
         aliases:
           - 'monster-ui.{{.Task.Slot}}'
 
-  mailcatcher:
-    image: 'schickling/mailcatcher'
+  mailhog:
+    image: 'mailhog/mailhog:latest'
+    hostname: 'mailcatcher'
     ports:
-      - target: 1080
+      - target: 8025
         mode: host
       - target: 1025
         mode: host
     networks:
       - kazoo
 
+  # mailcatcher:
+  #   image: 'schickling/mailcatcher'
+  #   ports:
+  #     - target: 1080
+  #       mode: host
+  #     - target: 1025
+  #       mode: host
+  #   networks:
+  #     - kazoo
+
 networks:
+  # kazoo_public:
+  #   external: true
+  #   name: host
   kazoo:
     attachable: true
 
