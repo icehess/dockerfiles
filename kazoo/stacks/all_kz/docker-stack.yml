@@ -41,43 +41,43 @@ configs:
 
 services:
 
-  couchdb:
-    image: couchdb:latest
-    hostname: 'couchdb.{{.Task.Slot}}'
-    environment:
-      NODENAME: 'couchdb.{{.Task.Slot}}'
-    ports:
-      - target: 9100
-      - target: 5984
-        mode: host
-      - target: 5986
-        mode: host
-    deploy:
-      mode: replicated
-    volumes:
-      - type: bind
-        source: ${COUDB_CONFIG_PATH:-/home/hesaam/work/2600hz/kazoo/docker/kazoo/stacks/all_kz/couchdb_cluster.ini}
-        target: /opt/couchdb/etc/local.d/20-cluster.ini
-      - type: volume
-        source: 'couchdb_data'
-        target: "/opt/couchdb/data"
-    networks:
-      kazoo:
-        aliases:
-          - 'couchdb.{{.Task.Slot}}'
+  # couchdb:
+  #   image: couchdb:latest
+  #   hostname: 'couchdb.{{.Task.Slot}}'
+  #   environment:
+  #     NODENAME: 'couchdb.{{.Task.Slot}}'
+  #   ports:
+  #     - target: 9100
+  #     - target: 5984
+  #       mode: host
+  #     - target: 5986
+  #       mode: host
+  #   deploy:
+  #     mode: replicated
+  #   volumes:
+  #     - type: bind
+  #       source: ${COUDB_CONFIG_PATH:-/home/hesaam/work/2600hz/kazoo/docker/kazoo/stacks/all_kz/couchdb_cluster.ini}
+  #       target: /opt/couchdb/etc/local.d/20-cluster.ini
+  #     - type: volume
+  #       source: 'couchdb_data'
+  #       target: "/opt/couchdb/data"
+  #   networks:
+  #     kazoo:
+  #       aliases:
+  #         - 'couchdb.{{.Task.Slot}}'
 
-  rabbitmq:
-    image: rabbitmq:3-management
-    hostname: 'rabbitmq.{{.Task.Slot}}'
-    ports:
-      - target: 15672 # management UI
-        mode: host
-      - target: 5672 # AMQP port
-        mode: host
-    networks:
-      kazoo:
-        aliases:
-          - 'rabbitmq.{{.Task.Slot}}'
+  # rabbitmq:
+  #   image: rabbitmq:3-management
+  #   hostname: 'rabbitmq.{{.Task.Slot}}'
+  #   ports:
+  #     - target: 15672 # management UI
+  #       mode: host
+  #     - target: 5672 # AMQP port
+  #       mode: host
+  #   networks:
+  #     kazoo:
+  #       aliases:
+  #         - 'rabbitmq.{{.Task.Slot}}'
 
   kazoo_apps:
     image: ${KZ_DEV_BASE_IMAGE:-kz-dev-base:19}
@@ -132,142 +132,142 @@ services:
         aliases:
           - 'kazoo_ecallmgr.{{.Task.Slot}}'
 
-  freeswitch:
-    image: icehess/kz-dev-fs:latest
-    hostname: 'freeswitch.{{.Task.Slot}}'
-    environment:
-       KZ_TRACE: "true"
-       FU_DOCKER_START: "16384"
-       FU_DOCKER_END: "16392"
-    ports: # range 16384-32768/udp
-      - published: 16384
-        target: 16384
-        protocol: udp
-        mode: host
-      - published: 16385
-        target: 16385
-        protocol: udp
-        mode: host
-      - published: 16386
-        target: 16386
-        protocol: udp
-        mode: host
-      - published: 16387
-        target: 16387
-        protocol: udp
-        mode: host
-      - published: 16388
-        target: 16388
-        protocol: udp
-        mode: host
-      - published: 16389
-        target: 16389
-        protocol: udp
-        mode: host
-      - published: 16390
-        target: 16390
-        protocol: udp
-        mode: host
-      - published: 16391
-        target: 16391
-        protocol: udp
-        mode: host
-      - published: 16392
-        target: 16392
-        protocol: udp
-        mode: host
-    networks:
-      # kazoo_public: {}
-      kazoo:
-        aliases:
-          - 'freeswitch.{{.Task.Slot}}'
+  # freeswitch:
+  #   image: icehess/kz-dev-fs:latest
+  #   hostname: 'freeswitch.{{.Task.Slot}}'
+  #   environment:
+  #      KZ_TRACE: "true"
+  #      FU_DOCKER_START: "16384"
+  #      FU_DOCKER_END: "16392"
+  #   ports: # range 16384-32768/udp
+  #     - published: 16384
+  #       target: 16384
+  #       protocol: udp
+  #       mode: host
+  #     - published: 16385
+  #       target: 16385
+  #       protocol: udp
+  #       mode: host
+  #     - published: 16386
+  #       target: 16386
+  #       protocol: udp
+  #       mode: host
+  #     - published: 16387
+  #       target: 16387
+  #       protocol: udp
+  #       mode: host
+  #     - published: 16388
+  #       target: 16388
+  #       protocol: udp
+  #       mode: host
+  #     - published: 16389
+  #       target: 16389
+  #       protocol: udp
+  #       mode: host
+  #     - published: 16390
+  #       target: 16390
+  #       protocol: udp
+  #       mode: host
+  #     - published: 16391
+  #       target: 16391
+  #       protocol: udp
+  #       mode: host
+  #     - published: 16392
+  #       target: 16392
+  #       protocol: udp
+  #       mode: host
+  #   networks:
+  #     # kazoo_public: {}
+  #     kazoo:
+  #       aliases:
+  #         - 'freeswitch.{{.Task.Slot}}'
 
-  kamailio:
-    image: icehess/kz-dev-km:latest
-    hostname: 'kamailio.{{.Task.Slot}}'
-    environment:
-       ENABLE_SERVICE_NAME: "false"
-       ENABLE_ADVERTISE: "false"
-       KZ_TRACE: "true"
-       KZ_WEBSOCKET_ENABLED: "true"
-       PUSHER_ROLE: "true"
-       PRESENCE_NOTIFY_SYNC_ROLE: "true"
-    ports:
-      - published: 5060 # SIP TCP
-        target: 5060
-        protocol: tcp
-        mode: host
-      - published: 5060 # SIP UDP
-        target: 5060
-        protocol: udp
-        mode: host
-      - published: 5061 # SSIP (SIP TLS)
-        target: 5061
-        protocol: tcp
-        mode: host
-      - published: 7000 # SIP ALG TCP
-        target: 7000
-        protocol: tcp
-        mode: host
-      - published: 7000 # SIP ALG UDP
-        target: 7000
-        protocol: udp
-        mode: host
-      - published: 7001 # SSIP ALG
-        target: 7001
-        protocol: tcp
-        mode: host
-      - published: 5064 # http/https/websocket
-        target: 5064
-        protocol: tcp
-        mode: host
-      - published: 5065 # http/https/websocket
-        target: 5065
-        protocol: tcp
-        mode: host
-    networks:
-      kazoo:
-        aliases:
-          - 'kamailio.{{.Task.Slot}}'
+  # kamailio:
+  #   image: icehess/kz-dev-km:latest
+  #   hostname: 'kamailio.{{.Task.Slot}}'
+  #   environment:
+  #      ENABLE_SERVICE_NAME: "false"
+  #      ENABLE_ADVERTISE: "false"
+  #      KZ_TRACE: "true"
+  #      KZ_WEBSOCKET_ENABLED: "true"
+  #      PUSHER_ROLE: "true"
+  #      PRESENCE_NOTIFY_SYNC_ROLE: "true"
+  #   ports:
+  #     - published: 5060 # SIP TCP
+  #       target: 5060
+  #       protocol: tcp
+  #       mode: host
+  #     - published: 5060 # SIP UDP
+  #       target: 5060
+  #       protocol: udp
+  #       mode: host
+  #     - published: 5061 # SSIP (SIP TLS)
+  #       target: 5061
+  #       protocol: tcp
+  #       mode: host
+  #     - published: 7000 # SIP ALG TCP
+  #       target: 7000
+  #       protocol: tcp
+  #       mode: host
+  #     - published: 7000 # SIP ALG UDP
+  #       target: 7000
+  #       protocol: udp
+  #       mode: host
+  #     - published: 7001 # SSIP ALG
+  #       target: 7001
+  #       protocol: tcp
+  #       mode: host
+  #     - published: 5064 # http/https/websocket
+  #       target: 5064
+  #       protocol: tcp
+  #       mode: host
+  #     - published: 5065 # http/https/websocket
+  #       target: 5065
+  #       protocol: tcp
+  #       mode: host
+  #   networks:
+  #     kazoo:
+  #       aliases:
+  #         - 'kamailio.{{.Task.Slot}}'
 
-  monster-ui:
-    image: ${MONSTER_IMG:-node:8.11.3-stretch}
-    hostname: 'monster-ui.{{.Task.Slot}}'
-    environment:
-       TERM: screen-256color
-       LC_CTYPE: en_US.UTF-8
-       LANG: en_US.UTF-8
-    volumes:
-      - type: bind
-        source: ./monster-entrypoint.sh
-        target: /monster-entrypoint.sh
-      - type: bind
-        source: ${MONSTER_PATH:-/home/hesaam/work/2600hz/kazoo/monster-ui}
-        target: "/opt/monster-ui"
-      - type: bind
-        source: ${SU_EXEC_BIN:-/home/hesaam/work/2600hz/kazoo/su-exec/su-exec}
-        target: "/su-exec"
-    ports:
-      - target: 3000
-        mode: host
-    tty: true
-    entrypoint: /monster-entrypoint.sh
-    command: ["/opt/monster-ui/node_modules/gulp/bin/gulp.js"]
-    networks:
-      kazoo:
-        aliases:
-          - 'monster-ui.{{.Task.Slot}}'
+  # monster-ui:
+  #   image: ${MONSTER_IMG:-node:8.11.3-stretch}
+  #   hostname: 'monster-ui.{{.Task.Slot}}'
+  #   environment:
+  #      TERM: screen-256color
+  #      LC_CTYPE: en_US.UTF-8
+  #      LANG: en_US.UTF-8
+  #   volumes:
+  #     - type: bind
+  #       source: ./monster-entrypoint.sh
+  #       target: /monster-entrypoint.sh
+  #     - type: bind
+  #       source: ${MONSTER_PATH:-/home/hesaam/work/2600hz/kazoo/monster-ui}
+  #       target: "/opt/monster-ui"
+  #     - type: bind
+  #       source: ${SU_EXEC_BIN:-/home/hesaam/work/2600hz/kazoo/su-exec/su-exec}
+  #       target: "/su-exec"
+  #   ports:
+  #     - target: 3000
+  #       mode: host
+  #   tty: true
+  #   entrypoint: /monster-entrypoint.sh
+  #   command: ["/opt/monster-ui/node_modules/gulp/bin/gulp.js"]
+  #   networks:
+  #     kazoo:
+  #       aliases:
+  #         - 'monster-ui.{{.Task.Slot}}'
 
-  mailhog:
-    image: 'mailhog/mailhog:latest'
-    hostname: 'mailcatcher'
-    ports:
-      - target: 8025
-        mode: host
-      - target: 1025
-        mode: host
-    networks:
-      - kazoo
+  # mailhog:
+  #   image: 'mailhog/mailhog:latest'
+  #   hostname: 'mailcatcher'
+  #   ports:
+  #     - target: 8025
+  #       mode: host
+  #     - target: 1025
+  #       mode: host
+  #   networks:
+  #     - kazoo
 
   # mailcatcher:
   #   image: 'schickling/mailcatcher'
