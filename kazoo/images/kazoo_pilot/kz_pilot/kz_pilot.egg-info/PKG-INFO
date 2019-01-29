@@ -1,0 +1,16 @@
+Metadata-Version: 1.2
+Name: kz-pilot
+Version: 0.0.1
+Summary: A Python library for Kazoo auto provisisioning.
+Home-page: https://github.com/icehess/dockerfiles
+Maintainer: Hesaam F
+License: UNKNOWN
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Environment :: Other Environment
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Topic :: Software Development
+Classifier: Topic :: Utilities
+Classifier: License :: OSI Approved :: Apache Software License

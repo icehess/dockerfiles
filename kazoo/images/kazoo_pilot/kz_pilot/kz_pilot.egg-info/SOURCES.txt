@@ -1,0 +1,9 @@
+setup.py
+kz_pilot.egg-info/PKG-INFO
+kz_pilot.egg-info/SOURCES.txt
+kz_pilot.egg-info/dependency_links.txt
+kz_pilot.egg-info/entry_points.txt
+kz_pilot.egg-info/requires.txt
+kz_pilot.egg-info/top_level.txt
+kzpilot/__init__.py
+kzpilot/__main__.py
