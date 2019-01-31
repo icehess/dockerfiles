@@ -160,26 +160,26 @@ services:
         aliases:
           - 'monster-ui.{{.Task.Slot}}'
 
-  mailhog:
-    image: 'mailhog/mailhog:latest'
-    hostname: 'mailcatcher'
-    ports:
-      - target: 8025
-        mode: host
-      - target: 1025
-        mode: host
-    networks:
-      - kazoo
-
-  # mailcatcher:
-  #   image: 'schickling/mailcatcher'
+  # mailhog:
+  #   image: 'mailhog/mailhog:latest'
+  #   hostname: 'mailcatcher'
   #   ports:
-  #     - target: 1080
+  #     - target: 8025
   #       mode: host
   #     - target: 1025
   #       mode: host
   #   networks:
   #     - kazoo
+
+  mailcatcher:
+    image: 'schickling/mailcatcher'
+    ports:
+      - target: 1080
+        mode: host
+      - target: 1025
+        mode: host
+    networks:
+      - kazoo
 
 networks:
   # kazoo_public:
