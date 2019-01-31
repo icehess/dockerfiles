@@ -1,0 +1,27 @@
+version: '3.7'
+
+x-node-env:
+  &kz-env
+    TERM: screen-256color
+    LC_CTYPE: en_US.UTF-8
+    LANG: en_US.UTF-8
+
+services:
+
+  consul:
+    image: 'consul'
+    environment:
+      CONSUL_ALLOW_PRIVILEGED_PORTS: ''
+      CONSUL_CLIENT_INTERFACE: eth0
+      CONSUL_BIND_INTERFACE: eth0
+    command: ["consul", "agent", "-dev", "-recursor=8.8.8.8"]
+    ports:
+      - target: 8500
+        published: 8500
+        mode: host
+    networks:
+      kz_weave: {}
+
+networks:
+  kz_weave:
+    driver: weaveworks/net-plugin:latest_release

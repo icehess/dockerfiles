@@ -28,13 +28,18 @@ class KzPilot:
             event_type = get_event_type(event)
             if event_type in log_events:
                 self.logEvent(event, event_type)
-            log.debug('Event: {}'.format(json.dumps(event, indent=4, sort_keys=True)))
 
     def clientConnect(self):
-        return docker.DockerClient(base_url=self.url)
+        try:
+            return docker.DockerClient(base_url=self.url)
+        except
 
     def logEvent(self, event, event_type):
-        action = event['Action']
+        if 'Actor' in event:
+            actor = event['Actor']
+        else:
+            actor = ''
+        log.debug('{} {}: {}'.format(event['Action'], event_type, actor))
 
 
     def shutdown(self):
