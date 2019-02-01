@@ -8,17 +8,26 @@ x-node-env:
 
 services:
 
-  consul:
-    image: 'consul'
+  # consul:
+  #   image: 'consul'
+  #   environment:
+  #     CONSUL_ALLOW_PRIVILEGED_PORTS: ''
+  #     CONSUL_CLIENT_INTERFACE: eth0
+  #     CONSUL_BIND_INTERFACE: eth0
+  #   command: ["consul", "agent", "-dev", "-recursor=8.8.8.8"]
+  #   ports:
+  #     - target: 8500
+  #       published: 8500
+  #       mode: host
+  #   networks:
+  #     kz_weave: {}
+
+  base:
+    image: 'icehess/base_dev:alpine'
+    hostname: '{{.Service.Name}}.{{.Task.Slot}}'
     environment:
-      CONSUL_ALLOW_PRIVILEGED_PORTS: ''
-      CONSUL_CLIENT_INTERFACE: eth0
-      CONSUL_BIND_INTERFACE: eth0
-    command: ["consul", "agent", "-dev", "-recursor=8.8.8.8"]
-    ports:
-      - target: 8500
-        published: 8500
-        mode: host
+      LOCAL_USER: ''
+    command: ["bash", "-l"]
     networks:
       kz_weave: {}
 
