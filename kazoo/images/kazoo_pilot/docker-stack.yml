@@ -26,11 +26,13 @@ services:
     image: 'icehess/base_dev:alpine'
     hostname: '{{.Service.Name}}.{{.Task.Slot}}'
     environment:
-      LOCAL_USER: ''
-    command: ["bash", "-l"]
+      LOCAL_USER: 'y'
+    command: ["/bin/bash"]
+    tty: true
+    deploy:
+      replicas: 3
     networks:
       kz_weave: {}
 
 networks:
   kz_weave:
-    driver: weaveworks/net-plugin:latest_release
