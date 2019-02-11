@@ -16,7 +16,7 @@ if [ -n "$LOCAL_USER" ]; then
     chown -R wefwef:wefwef /home/wefwef
     export HOME=/home/wefwef
 
-    exec /sbin/su-exec wefwef "$@"
+    exec /usr/bin/su-exec wefwef "$@"
 else
     exec "$@"
 fi

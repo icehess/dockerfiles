@@ -2,12 +2,11 @@ version: '3.7'
 
 x-node-env:
   &kz-env
+    LOCAL_USER: "y"
     TERM: screen-256color
     KAZOO_COOKIE: change_me
-    LC_CTYPE: en_US.UTF-8
-    LANG: en_US.UTF-8
-    CODE_LOADING_MODE: interactive
-    RELX_REPLACE_OS_VARS: "true"
+    # LC_CTYPE: en_US.UTF-8
+    # LANG: en_US.UTF-8
     PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/kazoo/_rel/kazoo/bin"
 
 x-devnode-cfg:
@@ -80,7 +79,7 @@ services:
           - 'rabbitmq.{{.Task.Slot}}'
 
   kazoo_apps:
-    image: ${KZ_DEV_BASE_IMAGE:-kz-dev-base:19}
+    image: icehess/kz-dev-env:19
     hostname: 'kazoo_apps.{{.Task.Slot}}'
     environment:
        << : *kz-env
@@ -110,7 +109,7 @@ services:
           - 'kazoo_apps.{{.Task.Slot}}'
 
   # kazoo_ecallmgr:
-  #   image: ${KZ_DEV_BASE_IMAGE:-kz-dev-base:19}
+  #   image: icehess/kz-dev-env:19
   #   hostname: 'kazoo_ecallmgr.{{.Task.Slot}}'
   #   environment:
   #      << : *kz-env
