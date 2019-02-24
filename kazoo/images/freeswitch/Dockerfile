@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV APT_LISTCHANGES_FRONTEND=none
 
 RUN apt-get update -y \
-        && apt-get install -y --no-install-recommends  vim-nox curl ca-certificates wget gnupg2 \
+        && apt-get install -y --no-install-recommends neovim curl ca-certificates gnupg2 \
         && curl https://files.freeswitch.org/repo/deb/freeswitch-1.8/fsstretch-archive-keyring.asc | apt-key add - \
         && echo "deb http://files.freeswitch.org/repo/deb/freeswitch-1.8/ stretch main" > /etc/apt/sources.list.d/freeswitch.list \
         && echo "deb-src http://files.freeswitch.org/repo/deb/freeswitch-1.8/ stretch main" >> /etc/apt/sources.list.d/freeswitch.list \
@@ -62,11 +62,7 @@ RUN apt-get update -y \
                 freeswitch-mod-random \
                 freeswitch-mod-rtc \
                 freeswitch-mod-rtmp \
-                freeswitch-mod-say-de \
                 freeswitch-mod-say-en \
-                freeswitch-mod-say-fa \
-                freeswitch-mod-say-fr \
-                freeswitch-mod-say-ru \
                 freeswitch-mod-shout \
                 freeswitch-mod-silk \
                 freeswitch-mod-skinny \
@@ -95,6 +91,7 @@ RUN apt-get update -y \
                 freeswitch-mod-yuv \
                 freeswitch-music-default \
                 freeswitch-sounds-en-us-callie \
+        && apt-get remove --purge -y gnupg2 \
         && apt-get remove --purge -y \
         && rm -rf /var/lib/apt/lists/*
 
