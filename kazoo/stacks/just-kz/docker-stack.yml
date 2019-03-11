@@ -12,19 +12,19 @@ x-node-env:
 x-devnode-cfg:
   &kz-dev
     - type: bind
-      source: ${KAZOO_SRC_PATH:-/home/hesaam/work/2600hz/kazoo/master}
+      source: ${wKazoo}/master
       target: /opt/kazoo
       read_only: false
     - type: bind
-      source: ${KAZOO_SOUNDS_PATH:-/home/hesaam/work/2600hz/kazoo/sounds/kazoo-core}
+      source: ${wKazoo}/sounds/kazoo-core
       target: /opt/sounds
       read_only: true
     - type: bind
-      source: /home/hesaam/work/2600hz/kazoo/docker/scripts
+      source: ${wWork}/dockerfiles/scripts
       target: /opt/scripts
       read_only: true
     - type: bind
-      source: /home/hesaam/work/2600hz/kazoo/monster-ui
+      source: ${wKazoo}/monster-ui
       target: /opt/monster-ui
       read_only: true
 
@@ -34,9 +34,7 @@ volumes:
 
 configs:
   kazoo_config_ini:
-    file: /home/hesaam/work/2600hz/kazoo/docker/kazoo/stacks/just-kz/config.ini
-  couchdb_cluster_ini:
-    file: /home/hesaam/work/2600hz/kazoo/docker/kazoo/stacks/just-kz/couchdb_cluster.ini
+    file: ${wWork}/dockerfiles/kazoo/stacks/just-kz/config.ini
 
 services:
 
@@ -55,7 +53,7 @@ services:
       mode: replicated
     volumes:
       - type: bind
-        source: ${COUDB_CONFIG_PATH:-/home/hesaam/work/2600hz/kazoo/docker/kazoo/stacks/just-kz/couchdb_cluster.ini}
+        source: ${wWork}/dockerfiles/kazoo/stacks/just-kz/couchdb_cluster.ini
         target: /opt/couchdb/etc/local.d/20-cluster.ini
       - type: volume
         source: 'couchdb_data'
@@ -143,10 +141,10 @@ services:
         source: ./monster-entrypoint.sh
         target: /monster-entrypoint.sh
       - type: bind
-        source: ${MONSTER_PATH:-/home/hesaam/work/2600hz/kazoo/monster-ui}
+        source: ${wKazoo}/monster-ui
         target: "/opt/monster-ui"
       - type: bind
-        source: ${SU_EXEC_BIN:-/home/hesaam/work/2600hz/kazoo/su-exec/su-exec}
+        source: ${wKazoo}/su-exec/su-exec
         target: "/su-exec"
     ports:
       - target: 3000
