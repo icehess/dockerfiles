@@ -12,19 +12,19 @@ x-node-env:
 x-devnode-cfg:
   &kz-dev
     - type: bind
-      source: ${wKazoo}/master
+      source: ${KAZOO_SRC:?give me your kazoo source path}
       target: /opt/kazoo
       read_only: false
     - type: bind
-      source: ${wKazoo}/sounds/kazoo-core
+      source: ${wKazoo:?err}/sounds/kazoo-core
       target: /opt/sounds
       read_only: true
     - type: bind
-      source: ${wWork}/dockerfiles/scripts
+      source: ${wWork:?err}/dockerfiles/scripts
       target: /opt/scripts
       read_only: true
     - type: bind
-      source: ${wKazoo}/monster-ui
+      source: ${wKazoo:?err}/monster-ui
       target: /opt/monster-ui
       read_only: true
 
@@ -34,7 +34,7 @@ volumes:
 
 configs:
   kazoo_config_ini:
-    file: ${wWork}/dockerfiles/kazoo/stacks/just-kz/config.ini
+      file: ${wWork:?err}/dockerfiles/kazoo/stacks/just-kz/config.ini
 
 services:
 
@@ -53,7 +53,7 @@ services:
       mode: replicated
     volumes:
       - type: bind
-        source: ${wWork}/dockerfiles/kazoo/stacks/just-kz/couchdb_cluster.ini
+        source: ${wWork:?err}/dockerfiles/kazoo/stacks/just-kz/couchdb_cluster.ini
         target: /opt/couchdb/etc/local.d/20-cluster.ini
       - type: volume
         source: 'couchdb_data'
@@ -130,7 +130,7 @@ services:
   #         - 'kazoo_ecallmgr.{{.Task.Slot}}'
 
   monster-ui:
-    image: ${MONSTER_IMG:-node:8.11.3-stretch}
+    image: node:8.11.3-stretch
     hostname: 'monster-ui.{{.Task.Slot}}'
     environment:
        TERM: screen-256color
@@ -141,10 +141,10 @@ services:
         source: ./monster-entrypoint.sh
         target: /monster-entrypoint.sh
       - type: bind
-        source: ${wKazoo}/monster-ui
+        source: ${wKazoo:?err}/monster-ui
         target: "/opt/monster-ui"
       - type: bind
-        source: ${wKazoo}/su-exec/su-exec
+        source: ${wKazoo:?err}/su-exec/su-exec
         target: "/su-exec"
     ports:
       - target: 3000
