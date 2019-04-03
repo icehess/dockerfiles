@@ -1,12 +1,4 @@
-FROM centos:7 as suexec_build
-RUN yum install -y git make gcc \
-    && git clone https://github.com/ncopa/su-exec.git /tmp/su-exec \
-    && make -C "/tmp/su-exec"
-
-
 FROM centos:7
-
-COPY --from=suexec_build /tmp/su-exec/su-exec /usr/bin/su-exec
 
 RUN echo ":: Installing repo and others" \
     && yum install -y \
@@ -29,8 +21,20 @@ RUN echo ":: Install them all!" \
         the_silver_searcher jq colordiff git \
         ## useful tools (psmisc: killall)
         sudo less whois strace tcpdump net-tools ntpdate bind-utils which file psmisc iproute \
+        ## su-exec dependencies (will be uninstalled later)
+        make gcc \
+    \
+    && echo ":: Buld su-exec" \
+    && git clone https://github.com/ncopa/su-exec.git /tmp/su-exec \
+    && make -C "/tmp/su-exec" \
+    && cp /tmp/su-exec/su-exec /usr/bin/su-exec \
+    \
+    && echo ":: Setup sudo" \
+    && cat /etc/sudoers | sed -r 's/^(%wheel\tALL=)/#\1/g' | sed -r 's/^# (%wheel\tALL=)/\1/g' > /etc/sudoers \
+    && visudo -c -f /etc/sudoers \
     \
     && echo ":: Cleanup!!" \
+    && yum autoremove -y gcc make \
     && rm -rf /tmp/* \
     && yum clean all \
     && rm -rf /var/cache/yum/* /root/.pki
@@ -55,9 +59,6 @@ RUN echo ":: Installing dotfiles" \
          /home/devuser/.vim/bundle/ale/ale_linters/erlang/ \
    && cp /home/devuser/.fzf/bin/fzf /home/devuser/.vim/bundle/fzf/bin/fzf \
    \
-   && echo ":: Setting up root dotfiles" \
-   && rm -rf /root && cp -R /home/devuser /root \
-   \
    && echo ":: Cleanup!!" \
    && for dir in /home/devuser/.vim/bundle/* ; do rm -rf $dir/.git ; done \
    && for dir in /home/devuser/.vim/bundle/*/doc ; do rm -rf $dir ; done \
@@ -66,7 +67,10 @@ RUN echo ":: Installing dotfiles" \
    && find /home/devuser/.vim/bundle/ -name *.gif -exec rm {} \; \
    && find /home/devuser/.vim/bundle/ -name *.jpg -exec rm {} \; \
    && find /home/devuser/.vim/bundle/ -name *.md -exec rm {} \; \
-   && find /home/devuser/.vim/bundle/ -name LICENCE -exec rm {} \;
+   && find /home/devuser/.vim/bundle/ -name LICENCE -exec rm {} \; \
+   \
+   && echo ":: Setting up root dotfiles" \
+   && rm -rf /root && cp -R /home/devuser /root
 
 ENV LOCAL_USERNAME devuser
 

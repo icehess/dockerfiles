@@ -1,4 +1,4 @@
-FROM kz-centos-dev:latest
+FROM icehess/kz-centos-dev:latest
 
 RUN echo ":: Install the actual package of interest!" \
     && yum install -y \
@@ -12,6 +12,7 @@ RUN echo ":: Install the actual package of interest!" \
     && rm -rf /var/cache/yum/* /root/.pki
 
 COPY docker-freeswitch /usr/bin/docker-freeswitch
+COPY docker-entrypoint-prepare /docker-entrypoint-prepare
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["freeswitch", "-nonat"]

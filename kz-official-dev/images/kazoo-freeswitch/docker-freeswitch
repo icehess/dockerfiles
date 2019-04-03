@@ -2,8 +2,8 @@
 
 FS_CFG_FILE=${FS_CFG_FILE:-/etc/kazoo/freeswitch}
 
-FREESWITCH_ARGS="$FS_ARGS"
-FREESWITCH_PARAMS="$FS_PARAMS"
+export FREESWITCH_ARGS="$FS_ARGS"
+export FREESWITCH_PARAMS="$FS_PARAMS"
 
 ## IP and Ports
 FS_DOCKER_START="$S_DOCKER_START"
@@ -30,10 +30,11 @@ FS_TRACE="${FS_TRACE}"
 FS_TRACE_URI="${FS_SIP_TRACE_URI:-127.0.0.1}"
 FS_TRACE_PORT="${FS_SIP_TRACE_PORT:-9060}"
 
-BIN_FILE="${FS_BIN:-/usr/bin/freeswitch}"
+export FS_BIN_FILE="${FS_BIN:-/usr/bin/freeswitch}"
 PID_FILE="${FS_PID:-/var/run/freeswitch/freeswitch.pid}"
-export HOME="${FS_HOME:-/var/lib/kazoo-freeswitch}"
+export FS_HOME="${FS_HOME:-/var/lib/kazoo-freeswitch}"
 
+# check if the local user (devuser) is exists
 USER="${LOCAL_USERNAME}"
 if [ -z "$USER" ]; then
     USER="freeswitch"
@@ -41,16 +42,19 @@ else
     (id -u "$USER" >/dev/null 2>&1) || USER="freeswitch"
 fi
 
-if [ "$(whoami)" == "root" ]; then
-    BIN_FILE="su-exec $USER $BIN_FILE"
-fi
+# just in case so everyone on the same page
+export LOCAL_USERNAME=$USER
 
+# we don't want to run freeswitch as root (also helps process reaping)
+if [ "$(whoami)" == "root" ]; then
+    export FS_BIN_FILE="su-exec $USER $FS_BIN_FILE"
+fi
 
 if [ -z "$FREESWITCH_ARGS" ]; then
-    FREESWITCH_ARGS="-nonat -conf $FS_CFG_FILE -run /var/run/freeswitch -db /var/lib/kazoo-freeswitch/db -log /var/log/freeswitch -cache /var/lib/kazoo-freeswitch/cache -sounds /usr/share/kazoo-freeswitch/sounds -storage /var/lib/kazoo-freeswitch/storage"
+    export FREESWITCH_ARGS="-nonat -conf $FS_CFG_FILE -run /var/run/freeswitch -db /var/lib/kazoo-freeswitch/db -log /var/log/freeswitch -cache /var/lib/kazoo-freeswitch/cache -sounds /usr/share/kazoo-freeswitch/sounds -storage /var/lib/kazoo-freeswitch/storage"
 fi
 
-sed_file() {
+sed_fs_file() {
     local regex="$1"
     local file="$2"
     local variable="$3"
@@ -59,16 +63,16 @@ sed_file() {
     fi
 }
 
-maybe_set_rtp_port_range() {
+maybe_fs_set_rtp_port_range() {
     local port_start_regex="s/(rtp-start-port.*value=\")[0-9]+/\1$FS_DOCKER_START/g"
     local port_end_regex="s/(rtp-end-port.*value=\")[0-9]+/\1$FS_DOCKER_END/g"
     local switch_file="$FS_CFG_FILE/autoload_configs/switch.conf.xml"
 
-    sed_file "$port_start_regex" "$switch_file" "$FS_DOCKER_START"
-    sed_file "$port_end_regex" "$switch_file" "$FS_DOCKER_START"
+    sed_fs_file "$port_start_regex" "$switch_file" "$FS_DOCKER_START"
+    sed_fs_file "$port_end_regex" "$switch_file" "$FS_DOCKER_START"
 }
 
-maybe_set_ip() {
+maybe_fs_set_ip() {
     local sipinterface_file="$FS_CFG_FILE/sip_profiles/sipinterface_1.xml"
 
     if [ -n "$FIND_SIP_IP" ]; then
@@ -82,9 +86,9 @@ maybe_set_ip() {
     local ext_sip_ip_regex="s/(ext-sip-ip.*value=\")[^\"]+/\1$FS_EXT_SIP_IP/g"
     local sip_port_regex="s/(sip-port.*value=\")[^\"]+/\1$FS_SIP_PORT/g"
 
-    sed_file "$sip_ip_regex" "$sipinterface_file" "$FS_SIP_IP"
-    sed_file "$ext_sip_ip_regex" "$sipinterface_file" "$FS_EXT_SIP_IP"
-    sed_file "$sip_port_regex" "$sipinterface_file" "$FS_SIP_PORT"
+    sed_fs_file "$sip_ip_regex" "$sipinterface_file" "$FS_SIP_IP"
+    sed_fs_file "$ext_sip_ip_regex" "$sipinterface_file" "$FS_EXT_SIP_IP"
+    sed_fs_file "$sip_port_regex" "$sipinterface_file" "$FS_SIP_PORT"
 
     if [ -n "$FIND_RTP_IP" ]; then
         FS_RTP_IP="`(ip route 2>/dev/null) | grep default | sed -r 's/.*src ([0-9.]+).*/\1/g'`"
@@ -96,11 +100,11 @@ maybe_set_ip() {
     local rtp_ip_regex="s/(rtp-ip.*value=\")[^\"]+/\1$FS_RTP_IP/g"
     local ext_rtp_ip_regex="s/(ext-rtp-ip.*value=\")[^\"]+/\1$FS_EXT_RTP_IP/g"
 
-    sed_file "$rtp_ip_regex" "$sipinterface_file" "$FS_RTP_IP"
-    sed_file "$ext_rtp_ip_regex" "$sipinterface_file" "$FS_EXT_RTP_IP"
+    sed_fs_file "$rtp_ip_regex" "$sipinterface_file" "$FS_RTP_IP"
+    sed_fs_file "$ext_rtp_ip_regex" "$sipinterface_file" "$FS_EXT_RTP_IP"
 }
 
-maybe_configure_mod_kazoo() {
+maybe_fs_configure_mod_kazoo() {
     local kazoo_file="$FS_CFG_FILE/autoload_configs/kazoo.conf.xml"
 
     local ip_regex="s/(listen-ip.*value=\")[0-9]+/\1$FS_MOD_KZ_LISTEN_IP/g"
@@ -110,14 +114,14 @@ maybe_configure_mod_kazoo() {
     local shortname_regex="s/(shortname.*value=\")[0-9]+/\1$FS_MOD_KZ_SHORT_NAME/g"
     local nodename_regex="s/(nodename.*value=\")[0-9]+/\1$FS_MOD_KZ_NODE_NAME/g"
 
-    sed_file "$ip_regex" "$kazoo_file" "$FS_MOD_KZ_LISTEN_IP"
-    sed_file "$port_regex" "$kazoo_file" "$FS_MOD_KZ_LISTEN_PORT"
-    sed_file "$cookie_regex" "$kazoo_file" "$FS_MOD_KZ_COOKIE"
-    sed_file "$nodename_regex" "$kazoo_file" "$FS_MOD_KZ_NODE_NAME"
-    sed_file "$shortname_regex" "$kazoo_file" "$FS_MOD_KZ_SHORT_NAME"
+    sed_fs_file "$ip_regex" "$kazoo_file" "$FS_MOD_KZ_LISTEN_IP"
+    sed_fs_file "$port_regex" "$kazoo_file" "$FS_MOD_KZ_LISTEN_PORT"
+    sed_fs_file "$cookie_regex" "$kazoo_file" "$FS_MOD_KZ_COOKIE"
+    sed_fs_file "$nodename_regex" "$kazoo_file" "$FS_MOD_KZ_NODE_NAME"
+    sed_fs_file "$shortname_regex" "$kazoo_file" "$FS_MOD_KZ_SHORT_NAME"
 }
 
-maybe_enable_trace() {
+maybe_fs_enable_trace() {
     if [ -z "$FS_TRACE" ]; then
         return
     fi
@@ -127,15 +131,15 @@ maybe_enable_trace() {
     local server_regex="/auto-restart/a <param name=\"capture-server\" value=\"udp:$FS_TRACE_URI:$FS_TRACE_PORT;hep=3;capture_id=100\"/>"
 
     if [ "$(grep -co 'capture-server' $sofia_file)" -eq 0 ]; then
-        sed_file "$server_regex" "$sofia_file"
+        sed_fs_file "$server_regex" "$sofia_file"
     fi
 }
 
-prepare_configs() {
-    maybe_set_rtp_port_range
-    maybe_set_ip
-    maybe_configure_mod_kazoo
-    maybe_enable_trace
+fs_prepare_configs() {
+    maybe_fs_set_rtp_port_range
+    maybe_fs_set_ip
+    maybe_fs_configure_mod_kazoo
+    maybe_fs_enable_trace
 }
 
 prepare() {
@@ -151,15 +155,15 @@ prepare() {
         rm -rf ${PID_FILE}
     fi
 
-    prepare_configs
+    fs_prepare_configs
 }
 
+
 start() {
-    prepare
-    cd ${HOME}
+    cd ${FS_HOME}
 
     /usr/bin/epmd -daemon
-    ${BIN_FILE} ${FREESWITCH_ARGS} ${FREESWITCH_PARAMS} "$@"
+    ${FS_BIN_FILE} ${FREESWITCH_ARGS} ${FREESWITCH_PARAMS} "$@"
 }
 
 status() {
