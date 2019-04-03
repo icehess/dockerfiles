@@ -11,7 +11,7 @@ RUN echo ":: Install the actual package of interest!" \
     && rm -rf /var/cache/yum/* /root/.pki
 
 COPY docker-kamailio /usr/bin/docker-kamailio
-COPY docker-entrypoint-prepare /docker-entrypoint-prepare
+# COPY docker-entrypoint-prepare /docker-entrypoint-prepare
 
 ##     SIP  SSIP SIP_ALG SSIP_ALG WS   WSS
 EXPOSE 5060 5061 7000    7001     5064 5065
