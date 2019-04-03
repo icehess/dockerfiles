@@ -30,12 +30,12 @@ EXTRA_OPTIONS=${EXTRA_OPTIONS:-"-x tlsf -w /tmp"}
 
 MY_LOCAL_IP=$(ip route get 8.8.8.8 2> /dev/null | awk '{print ""$NF""; exit}')
 if [[ ! -z ${MY_LOCAL_IP} ]]; then
-   EXTRA_OPTIONS+=" -A MY_LOCAL_IP=${MY_LOCAL_IP}"
+    EXTRA_OPTIONS+=" -A MY_LOCAL_IP=${MY_LOCAL_IP}"
 fi
 
 MY_PUBLIC_IP=$(dig @ns1.google.com TXT o-o.myaddr.l.google.com +short -4 2> /dev/null | sed s/\"//g )
 if [[ ! -z ${MY_PUBLIC_IP} ]]; then
-   EXTRA_OPTIONS+=" -A MY_PUBLIC_IP=${MY_PUBLIC_IP}"
+    EXTRA_OPTIONS+=" -A MY_PUBLIC_IP=${MY_PUBLIC_IP}"
 fi
 
 SHM_MEMORY=$((`echo $SHM_MEMORY | sed -e 's/[^0-9]//g'`))
@@ -72,7 +72,7 @@ prepare() {
                 rm -rf ${DB_LOCATION}/../db-backup-temp
             fi
         else
-        ### check ramdisk size
+            ### check ramdisk size
             mountcurrentsize=$(mount_point_size)
             mountwantedsize=$(convert_size ${RAM_DISK_SIZE})
             if [ $mountcurrentsize -lt $mountwantedsize ]; then
@@ -85,7 +85,7 @@ prepare() {
                 mkdir -p ${DB_LOCATION}
                 mount -t tmpfs -o size=${RAM_DISK_SIZE} tmpfs ${DB_LOCATION}
                 cp -f ${DB_LOCATION}/../db-backup-temp/* ${DB_LOCATION}/
-                rm -rf ${DB_LOCATION}/../db-backup-temp                
+                rm -rf ${DB_LOCATION}/../db-backup-temp
             elif [ $mountcurrentsize -gt $mountwantedsize ]; then
                 # check if it fits
                 echo "wanted size of $mountwantedsize is below current size of $mountcurrentsize , checking sizes"
@@ -119,7 +119,7 @@ prepare() {
             rm -rf ${DB_LOCATION}
             mkdir -p ${DB_LOCATION}
             cp -f ${DB_LOCATION}/../db-backup-temp/* ${DB_LOCATION}/
-        fi        
+        fi
     fi
     if [ ! -f ${DB_LOCATION}/kazoo.db ]; then
         init_database
@@ -131,13 +131,13 @@ prepare() {
 }
 
 ram_disk_enabled() {
-    
+
     grep -e "enable_ram_disk = true" ${CFG_DIR}/local.cfg &> /dev/null
     config_enabled=$?
     if [[ $RAM_DISK_ENABLED == "true" ]] || [[ $config_enabled -eq 0 ]]; then
-       return 0
+        return 0
     else
-       return 1
+        return 1
     fi
 }
 
@@ -160,23 +160,23 @@ mount_point_free_size() {
 
 convert_size() {
     echo "$1" | awk \
-      'BEGIN{IGNORECASE = 1}
-       function printpower(n,b,p) {printf "%u\n", n*b^p; next}
-       /[0-9]$/{print $1;next};
-       /K(iB)?$/{printpower($1,  2, 10)};
-       /M(iB)?$/{printpower($1,  2, 20)};
-       /G(iB)?$/{printpower($1,  2, 30)};
-       /T(iB)?$/{printpower($1,  2, 40)};
-       /KB$/{    printpower($1, 10,  3)};
-       /MB$/{    printpower($1, 10,  6)};
-       /GB$/{    printpower($1, 10,  9)};
-       /TB$/{    printpower($1, 10, 12)}'
-}
+        'BEGIN{IGNORECASE = 1}
+            function printpower(n,b,p) {printf "%u\n", n*b^p; next}
+            /[0-9]$/{print $1;next};
+            /K(iB)?$/{printpower($1,  2, 10)};
+            /M(iB)?$/{printpower($1,  2, 20)};
+            /G(iB)?$/{printpower($1,  2, 30)};
+            /T(iB)?$/{printpower($1,  2, 40)};
+            /KB$/{    printpower($1, 10,  3)};
+            /MB$/{    printpower($1, 10,  6)};
+            /GB$/{    printpower($1, 10,  9)};
+            /TB$/{    printpower($1, 10, 12)}'
+        }
 
-init_database() {
-    ${DB_SCRIPT_DIR}/create-kazoodb-sql.sh
-    check_database
-}
+    init_database() {
+        ${DB_SCRIPT_DIR}/create-kazoodb-sql.sh
+        check_database
+    }
 
 check_database() {
     ${DB_SCRIPT_DIR}/check-kazoodb-sql.sh

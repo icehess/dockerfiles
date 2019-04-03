@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-LOCAL_USERNAME=${LOCAL_USERNAME:-devuser}
-LOCAL_USER_ID=${LOCAL_USER_ID:-1000}
+export LOCAL_USERNAME=${LOCAL_USERNAME:-devuser}
+export LOCAL_USER_ID=${LOCAL_USER_ID:-1000}
 
 if [ -n "$LOCAL_USER" ]; then
     echo "Starting with UID : $LOCAL_USER_ID"
@@ -13,9 +13,9 @@ if [ -n "$LOCAL_USER" ]; then
     chown -R $LOCAL_USERNAME:$LOCAL_USERNAME /home/$LOCAL_USERNAME
     export HOME=/home/$LOCAL_USERNAME
 
-    export FS_USER=$LOCAL_USERNAME
-
+    [ -f /docker-entrypoint-prepare ] && . /docker-entrypoint-prepare
     exec /usr/bin/su-exec $LOCAL_USERNAME "$@"
 else
+    [ -f /docker-entrypoint-prepare ] && . /docker-entrypoint-prepare
     exec "$@"
 fi
