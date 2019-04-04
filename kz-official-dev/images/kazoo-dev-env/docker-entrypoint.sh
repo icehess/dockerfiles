@@ -1,22 +1,21 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+export LOCAL_USERNAME=${LOCAL_USERNAME:-devuser}
+export LOCAL_USER_ID=${LOCAL_USER_ID:-1000}
 
 if [ -n "$LOCAL_USER" ]; then
-    # Add local user
-    # Either use the LOCAL_USER_ID if passed in at runtime or fallback to 1000
-    USER_ID=${LOCAL_USER_ID:-1000}
+    echo "Starting with UID : $LOCAL_USER_ID"
 
-    echo "Starting with UID : $USER_ID"
-
-    if [ -r /etc/alpine-release ]; then
-        adduser -s /bin/bash -u $USER_ID -H -D wefwef
-    else
-        useradd -s /bin/bash -u $USER_ID -o -M wefwef
+    useradd -s /bin/bash -u $LOCAL_USER_ID -o -G wheel -M $LOCAL_USERNAME
+    if [ ! -d "/home/$LOCAL_USERNAME" ]; then
+        mkdir -p /home/$LOCAL_USERNAME
     fi
+    chown -R $LOCAL_USERNAME:$LOCAL_USERNAME /home/$LOCAL_USERNAME
+    export HOME=/home/$LOCAL_USERNAME
 
-    chown -R wefwef:wefwef /home/wefwef
-    export HOME=/home/wefwef
-
-    exec /usr/bin/su-exec wefwef "$@"
+    [ -f /docker-entrypoint-prepare ] && . /docker-entrypoint-prepare
+    exec /usr/bin/su-exec $LOCAL_USERNAME "$@"
 else
+    [ -f /docker-entrypoint-prepare ] && . /docker-entrypoint-prepare
     exec "$@"
 fi
