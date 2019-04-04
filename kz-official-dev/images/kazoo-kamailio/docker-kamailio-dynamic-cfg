@@ -1,5 +1,8 @@
 #!/bin/bash
 
+###############################################################
+#### Utility functions
+
 section_header() {
     cat <<END
 ################################################################################
@@ -7,6 +10,31 @@ section_header() {
 ################################################################################
 END
 }
+
+substdef() {
+    cat <<-END
+
+#!substdef "!$1!$2!g"
+END
+}
+
+try_def() {
+    cat <<-END
+
+#!trydef $1
+END
+}
+
+get_local_ip() {
+    echo -n `(ip route 2>/dev/null) | grep default | sed -r 's/.*src ([0-9.]+).*/\1/g'`
+}
+
+get_public_ip() {
+    echo -n `(dig @ns1.google.com TXT o-o.myaddr.l.google.com +short -4 2> /dev/null) | sed s/\"//g`
+}
+
+###############################################################
+#### General
 
 ## if you don't want to put every variable in this file in enviroment
 ## put them in the file below and mount it as in docker config or mount bind it.
@@ -28,9 +56,9 @@ MY_HOSTNAME="${MY_HOSTNAME:-`hostname -f`}"
 
 if [ "$USE_PUBLIC_IP" = "true" ]; then
     ## TODO: error check dig command if the internet is not reachable
-    MY_IP_ADDRESS=`(dig @ns1.google.com TXT o-o.myaddr.l.google.com +short -4 2> /dev/null) | sed s/\"//g`
+    MY_IP_ADDRESS=`get_public_ip`
 else
-    MY_IP_ADDRESS=`(ip route 2>/dev/null) | grep default | sed -r 's/.*src ([0-9.]+).*/\1/g'`
+    MY_IP_ADDRESS=${KAM_IP_ADDRESS:-`get_local_ip`}
 fi
 
 ###############################################################
@@ -47,12 +75,6 @@ AMQP_URL4="$AMQP_URL4"
 AMQP_URL5="$AMQP_URL5"
 AMQP_URL6="$AMQP_URL6"
 
-substdef() {
-    cat <<-END
-#!substdef "!$1!$2!g"
-
-END
-}
 multi_zone_amqp() {
     local zones=""
     [ -n "$AMQP_URL2" ] && zones="$zones`substdef "AMQP_URL2" "$AMQP_URL2"`"
@@ -90,13 +112,6 @@ WEBSOCKET_NO_ORIGIN_RESTRICTION="${WEBSOCKET_NO_ORIGIN_RESTRICTION:-false}"
 ###############################################################
 #### Roles enabler
 
-try_def() {
-    cat <<-END
-#!trydef $1
-
-END
-}
-
 enable_roles() {
     local roles=""
     [ "$ENABLE_ANTIFLOOD_ROLE" = "true" ] && roles="$roles`try_def 'ANTIFLOOD_ROLE'`"
@@ -115,8 +130,7 @@ ROLES_SECTION=`enable_roles`
 
 ## SIP TRACE
 sip_trace_settings() {
-        cat << END
-$header
+        cat <<-END
 #!define SIP_TRACE_URI "sip:$SIP_TRACE_URI"
 #!trydef HEP_CAPTURE_ID $HEP_CAPTURE_ID
 #!trydef KZ_TRACE 1
@@ -146,6 +160,11 @@ fi
 
 if [ "$ENABLE_RAM_DISK" = "true" ]; then
     ENABLE_RAM_DISK_SETTINGS="#enable_ram_disk = true"
+fi
+
+## import docker file
+if [ "$(grep -co '"docker.cfg"' $CFG_DIR/local.cfg)" -eq 0 ]; then
+    sed -r -i '/defs\.cfg/i import_file "docker.cfg"' $CFG_DIR/local.cfg
 fi
 
 cat > /etc/kazoo/kamailio/docker.cfg <<-EOF

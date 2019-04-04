@@ -107,7 +107,6 @@ configure_database() {
             fi
             mkdir -p ${DB_LOCATION}/../db-backup-temp
             cp -f ${DB_LOCATION}/* ${DB_LOCATION}/../db-backup-temp/
-            umount ${DB_LOCATION}
             rm -rf ${DB_LOCATION}
             mkdir -p ${DB_LOCATION}
             cp -f ${DB_LOCATION}/../db-backup-temp/* ${DB_LOCATION}/
@@ -132,9 +131,10 @@ prepare() {
 }
 
 ram_disk_enabled() {
-    grep -e "enable_ram_disk = true" ${CFG_DIR}/{local,docker}.cfg &> /dev/null
+    grep -e "enable_ram_disk = true" ${CFG_DIR}/local.cfg &> /dev/null
     config_enabled=$?
-    if [[ $RAM_DISK_ENABLED == "true" ]] || [[ $config_enabled -eq 0 ]]; then
+    have_capability=`capsh --print | grep "Current:" | cut -d' ' -f3 | grep -co cap_sys_admin`
+    if ([ $RAM_DISK_ENABLED == "true" ] || [ $config_enabled -eq 0 ]) && [ ! $have_capability -eq 0]; then
         return 0
     else
         return 1
