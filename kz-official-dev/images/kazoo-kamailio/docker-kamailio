@@ -1,58 +1,50 @@
 #!/bin/bash
 
-if [ -f /etc/default/kamailio ]; then
-    . /etc/default/kamailio
+export CFG_DIR=${KAM_CFG_DIR:-/etc/kazoo/kamailio}
+export CFG_FILE="$CFG_DIR/kamailio.cfg"
+
+BIN_FILE=/usr/sbin/kamailio
+PID_FILE=/var/run/kamailio/kazoo-kamailio.pid
+
+# check if the local user (devuser) is exists
+USER=${LOCAL_USERNAME}
+if [ -z "$USER" ]; then
+    USER="kamailio"
+else
+    (id -u "$USER" >/dev/null 2>&1) || USER="kamailio"
 fi
 
-if [ -f /etc/sysconfig/kamailio ]; then
-    . /etc/sysconfig/kamailio
+# we don't want to run freeswitch as root (also helps process reaping)
+if [ "$(whoami)" == "root" ]; then
+    BIN_FILE="su-exec $USER $BIN_FILE"
 fi
 
-if [ -f /etc/kazoo/kamailio/options ]; then
-    . /etc/kazoo/kamailio/options
-fi
+export DB_SCRIPT_DIR=${KAM_DB_SCRIPT_DIR:-${CFG_DIR}/db_scripts}
+export DB_LOCATION=${KAM_DB_LOCATION:-/etc/kazoo/kamailio/db}
+export KAMAILIO_SHARE_DIR=${KAM_SHARE_DIR:-/usr/share/kamailio}
 
-RETVAL=1
-USER=${KAMAILIO_USER:-kamailio}
-GROUP=${KAMAILIO_GROUP:-daemon}
-BIN_FILE=${KAMAILIO_BIN:-/usr/sbin/kamailio}
-PID_FILE=${KAMAILIO_PID:-/var/run/kamailio/kazoo-kamailio.pid}
-CFG_FILE=${KAMAILIO_CONFIG:-/etc/kazoo/kamailio/kamailio.cfg}
-CFG_DIR=$(dirname ${CFG_FILE})
-export DB_SCRIPT_DIR=${KAMAILIO_DB_SCRIPT_DIR:-${CFG_DIR}/db_scripts}
-export DB_LOCATION=${KAMAILIO_DB_LOCATION:-/etc/kazoo/kamailio/db}
-export KAMAILIO_SHARE_DIR=${KAMAILIO_SHARE_DIR:-/usr/share/kamailio}
-export HOME=${KAMAILIO_HOME:-/var/run/kamailio}
-RAM_DISK_SIZE=${RAM_DISK_SIZE:-256m}
-RAM_DISK_FREE_SIZE_PERC=${RAM_DISK_FREE_SIZE:-30}
-RAM_DISK_ENABLED=${RAM_DISK_ENABLED:-false}
-EXTRA_OPTIONS=${EXTRA_OPTIONS:-"-x tlsf -w /tmp"}
+export HOME=${KAM_HOME:-/var/run/kamailio}
 
-MY_LOCAL_IP=$(ip route get 8.8.8.8 2> /dev/null | awk '{print ""$NF""; exit}')
-if [[ ! -z ${MY_LOCAL_IP} ]]; then
-    EXTRA_OPTIONS+=" -A MY_LOCAL_IP=${MY_LOCAL_IP}"
-fi
+RAM_DISK_SIZE=${KAM_RAM_DISK_SIZE:-256m}
+RAM_DISK_FREE_SIZE_PERC=${KAM_RAM_DISK_FREE_SIZE:-30}
+RAM_DISK_ENABLED=${KAM_RAM_DISK_ENABLED:-false}
 
-MY_PUBLIC_IP=$(dig @ns1.google.com TXT o-o.myaddr.l.google.com +short -4 2> /dev/null | sed s/\"//g )
-if [[ ! -z ${MY_PUBLIC_IP} ]]; then
-    EXTRA_OPTIONS+=" -A MY_PUBLIC_IP=${MY_PUBLIC_IP}"
-fi
-
-SHM_MEMORY=$((`echo $SHM_MEMORY | sed -e 's/[^0-9]//g'`))
-PKG_MEMORY=$((`echo $PKG_MEMORY | sed -e 's/[^0-9]//g'`))
+SHM_MEMORY=$((`echo $KAM_SHM_MEMORY | sed -e 's/[^0-9]//g'`))
+PKG_MEMORY=$((`echo $KAM_PKG_MEMORY | sed -e 's/[^0-9]//g'`))
 [ $SHM_MEMORY -le 0 ] && SHM_MEMORY=64
 [ $PKG_MEMORY -le 0 ] && PKG_MEMORY=8
 
-if test "$DUMP_CORE" = "yes" ; then
-    ulimit -c unlimited
-fi
+NO_DOCKER_CFG=${NO_DOCKER_CFG}
 
-prepare() {
-    mkdir -p /var/run/kamailio
-    chown -R ${USER} /var/run/kamailio
-    if [ -e ${PID_FILE} ]; then
-        rm -rf ${PID_FILE}
-    fi
+EXTRA_OPTIONS=${KAM_EXTRA_OPTIONS:-"-x tlsf -w /tmp"}
+
+configure_docker_cfg() {
+    [ -n "$NO_DOCKER_CFG" ] && return
+
+    docker-kamailio-dynamic-cfg
+}
+
+configure_database() {
     if ram_disk_enabled; then
         if ! mount_point_exists; then
             if [ -d ${DB_LOCATION}/../db-backup-temp ]; then
@@ -127,12 +119,20 @@ prepare() {
         check_database
     fi
     chown -R ${USER} ${DB_LOCATION}
-    RETVAL=$?
+}
+
+prepare() {
+    mkdir -p /var/run/kamailio
+    chown -R ${USER} /var/run/kamailio
+    if [ -e ${PID_FILE} ]; then
+        rm -rf ${PID_FILE}
+    fi
+    configure_docker_cfg
+    configure_database
 }
 
 ram_disk_enabled() {
-
-    grep -e "enable_ram_disk = true" ${CFG_DIR}/local.cfg &> /dev/null
+    grep -e "enable_ram_disk = true" ${CFG_DIR}/{local,docker}.cfg &> /dev/null
     config_enabled=$?
     if [[ $RAM_DISK_ENABLED == "true" ]] || [[ $config_enabled -eq 0 ]]; then
         return 0
@@ -171,12 +171,12 @@ convert_size() {
             /MB$/{    printpower($1, 10,  6)};
             /GB$/{    printpower($1, 10,  9)};
             /TB$/{    printpower($1, 10, 12)}'
-        }
+}
 
-    init_database() {
-        ${DB_SCRIPT_DIR}/create-kazoodb-sql.sh
-        check_database
-    }
+init_database() {
+    ${DB_SCRIPT_DIR}/create-kazoodb-sql.sh
+    check_database
+}
 
 check_database() {
     ${DB_SCRIPT_DIR}/check-kazoodb-sql.sh
@@ -188,47 +188,11 @@ start() {
     check_config
     check_fork
 
-    if [ "$(whoami)" == "${USER}" ]; then
-        set -- ${BIN_FILE} -f ${CFG_FILE} -m ${SHM_MEMORY} -M ${PKG_MEMORY} ${EXTRA_OPTIONS} "$@"
-        exec "$@"
-    else
-        set -- ${BIN_FILE} -f ${CFG_FILE} -m ${SHM_MEMORY} -M ${PKG_MEMORY} -u ${USER} -g ${GROUP} ${EXTRA_OPTIONS} "$@"
-        runuser -s /bin/bash ${USER} -c "$*"
-    fi
-    RETVAL=$?
-
-    if [ ${RETVAL} -ne 0 ]; then
-        echo "Failed to start Kamailio!"
-        RETVAL=1
-    fi
-}
-
-stop() {
-    kamcmd core.kill
-    RETVAL=$?
-    if mount_point_exists; then
-        mkdir -p ${DB_LOCATION}/../db-backup
-        cp -f ${DB_LOCATION}/* ${DB_LOCATION}/../db-backup/
-    fi
-}
-
-restart() {
-    stop
-    start
-}
-
-reset-restart() {
-    cd /etc/kazoo/kamailio/dbtext/
-    stop
-
-    chown kamailio:daemon *
-
-    start
+    ${BIN_FILE} -DD -f ${CFG_FILE} -m ${SHM_MEMORY} -M ${PKG_MEMORY} ${EXTRA_OPTIONS} "$@"
 }
 
 status() {
     kamcmd dispatcher.list
-    RETVAL=$?
 }
 
 # Do not start kamailio if fork=no is set in the config file
@@ -257,16 +221,9 @@ case "$1" in
     prepare)
         prepare
         ;;
-    background)
-        shift
-        start $@
-        ;;
     start)
         shift
-        start -DD $@
-        ;;
-    stop)
-        stop
+        start $@
         ;;
     restart)
         restart
@@ -281,7 +238,5 @@ case "$1" in
         check_config
         ;;
     *)
-        echo $"Usage: $0 {prepare|start|background|stop|restart|reset-restart|status|check|pid}"
+        echo $"Usage: $0 {prepare|start|status|check|pid}"
 esac
-
-exit ${RETVAL}

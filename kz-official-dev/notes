@@ -1,1 +1,2 @@
 (ip route 2>/dev/null) | grep default | sed -r 's/.*src ([0-9.]+).*/\1/g'
+(dig @ns1.google.com TXT o-o.myaddr.l.google.com +short -4 2> /dev/null) | sed s/\"//g
