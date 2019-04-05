@@ -15,4 +15,4 @@ COPY docker-freeswitch /usr/bin/docker-freeswitch
 COPY docker-entrypoint-prepare /docker-entrypoint-prepare
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["freeswitch", "-nonat"]
+CMD ["docker-freeswitch", "start"]
