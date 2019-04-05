@@ -18,4 +18,4 @@ COPY docker-entrypoint-prepare /docker-entrypoint-prepare
 EXPOSE 5060 5061 7000    7001     5064 5065
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["kamailio", "-DD", "-E"]
+CMD ["docker-kamailio", "start"]

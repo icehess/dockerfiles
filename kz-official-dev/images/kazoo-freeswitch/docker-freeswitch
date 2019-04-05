@@ -141,6 +141,8 @@ fs_prepare_configs() {
 }
 
 prepare() {
+    # be nice and change ownership of actual freeswitch config dir
+    chown -R ${USER} /etc/freeswitch
     mkdir -p /var/log/freeswitch
     chown -R ${USER} /var/log/freeswitch
     mkdir -p /var/lib/kazoo-freeswitch/{db,cache,storage}
