@@ -20,7 +20,7 @@ RUN echo ":: Install them all!" \
         neovim python2-neovim python34-neovim bash-completion bash-completion-extras tmux \
         the_silver_searcher jq colordiff git \
         ## useful tools (psmisc: killall)
-        sudo less whois strace tcpdump net-tools ntpdate bind-utils which file psmisc iproute \
+        sudo less whois strace tcpdump net-tools ntpdate bind-utils which file psmisc iproute lsof \
         ## su-exec dependencies (will be uninstalled later)
         make gcc \
     \
@@ -30,7 +30,7 @@ RUN echo ":: Install them all!" \
     && cp /tmp/su-exec/su-exec /usr/bin/su-exec \
     \
     && echo ":: Setup sudo" \
-    && cat /etc/sudoers | sed -r 's/^(%wheel\tALL=)/#\1/g' | sed -r 's/^# (%wheel\tALL=)/\1/g' > /etc/sudoers \
+    && echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers \
     && visudo -c -f /etc/sudoers \
     \
     && echo ":: Cleanup!!" \
