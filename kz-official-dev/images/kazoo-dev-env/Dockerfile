@@ -42,7 +42,7 @@ RUN echo ":: Install them all!" \
         neovim emacs-nox ctags bash-completion tmux \
         silversearcher-ag jq colordiff \
         ## useful tools
-        man locales sudo less whois strace tcpdump net-tools ntpdate dnsutils \
+        man sudo less whois strace tcpdump net-tools ntpdate dnsutils psmisc lsof \
         ## Kazoo runtime dependencies
         zip unzip libexpat1-dev htmldoc sox libsox-fmt-all ghostscript \
         imagemagick libtiff-tools openjdk-8-jre libreoffice-writer \
@@ -54,6 +54,10 @@ RUN echo ":: Install them all!" \
         couchdb \
         ## performance tools
         perf-tools-unstable \
+    \
+    && echo ":: Setup sudo" \
+    && echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers \
+    && visudo -c -f /etc/sudoers \
     \
     && echo ":: Cleanup!!" \
     && rm -rf /tmp/* \

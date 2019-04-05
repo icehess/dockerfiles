@@ -6,7 +6,7 @@ export LOCAL_USER_ID=${LOCAL_USER_ID:-1000}
 if [ -n "$LOCAL_USER" ]; then
     echo "Starting with UID : $LOCAL_USER_ID"
 
-    useradd -s /bin/bash -u $LOCAL_USER_ID -o -G wheel -M $LOCAL_USERNAME
+    useradd -s /bin/bash -u $LOCAL_USER_ID -o -G sudo -M $LOCAL_USERNAME
     if [ ! -d "/home/$LOCAL_USERNAME" ]; then
         mkdir -p /home/$LOCAL_USERNAME
     fi
