@@ -6,4 +6,4 @@ TAG=${FS_TAG:-$TAG}
 REPO=${REPO:-icehess}
 NAME=${FS_IMG_NAME:-kz-fs}
 
-docker build . --rm --froce-rm -t $REPO/$NAME:$TAG
+docker build . --rm --force-rm -t $REPO/$NAME:$TAG
