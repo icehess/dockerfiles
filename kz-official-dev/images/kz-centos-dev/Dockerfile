@@ -17,7 +17,7 @@ ENV LANG en_US.UTF-8
 RUN echo ":: Install them all!" \
     && yum install -y \
         ## editors and tools
-        neovim python2-neovim python34-neovim bash-completion bash-completion-extras tmux \
+        neovim python36-neovim bash-completion bash-completion-extras tmux \
         the_silver_searcher jq colordiff git \
         ## useful tools (psmisc: killall)
         sudo less whois strace tcpdump net-tools ntpdate bind-utils which file psmisc iproute lsof \
