@@ -26,7 +26,7 @@ END
 }
 
 get_local_ip() {
-    echo -n `(ip route 2>/dev/null) | grep default | sed -r 's/.*src ([0-9.]+).*/\1/g'`
+    echo -n $(ip route get $(ip route show 0.0.0.0/0 | grep -oP 'via \K\S+') | grep -oP 'src \K\S+')
 }
 
 get_public_ip() {
