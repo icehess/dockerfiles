@@ -32,9 +32,9 @@ x-devol-cfg:
 services:
   couchdb:
     image: couchdb:latest
-    hostname: 'couchdb.local'
+    hostname: 'couchdb.dev'
     environment:
-      NODENAME: 'couchdb.local'
+      NODENAME: 'couchdb.dev'
     volumes:
       - type: bind
         source: ${wWork}/dockerfiles/kazoo/stacks/all_kz/couchdb_cluster.ini
@@ -54,7 +54,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management
-    hostname: 'rabbitmq.local'
+    hostname: 'rabbitmq.dev'
     network_mode: host
     # when not using network_mpde=host
     # ports:
@@ -67,7 +67,7 @@ services:
 
   kazoo_apps:
     image: icehess/kz-dev-env:19
-    hostname: 'kapps.local'
+    hostname: 'kapps.dev'
     environment:
        << : *kz-env
        KAZOO_NODE: kazoo_apps
@@ -94,7 +94,7 @@ services:
 
   kazoo_ecallmgr:
     image: icehess/kz-dev-env:19
-    hostname: 'ecallmgr.local'
+    hostname: 'ecallmgr.dev'
     environment:
        << : *kz-env
        KAZOO_NODE: ecallmgr
@@ -114,7 +114,7 @@ services:
 
   freeswitch:
     image: icehess/kz-fs:latest
-    hostname: 'freeswitch.local'
+    hostname: 'freeswitch.dev'
     command: /usr/bin/docker-freeswitch start
     environment:
         LOCAL_USER: "true"
@@ -126,7 +126,7 @@ services:
 
   kamailio:
     image: icehess/kz-kam:latest
-    hostname: 'kamailio.local'
+    hostname: 'kamailio.dev'
     command: /usr/bin/docker-kamailio start
     environment:
         LOCAL_USER: "true"
@@ -171,7 +171,7 @@ services:
 
   # monster-ui:
   #   image: ${MONSTER_IMG:-node:8.11.3-stretch}
-  #   hostname: 'monster-ui.local'
+  #   hostname: 'portal.dev'
   #   environment:
   #      TERM: screen-256color
   #   volumes:
