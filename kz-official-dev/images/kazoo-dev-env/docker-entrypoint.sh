@@ -1,16 +1,13 @@
 #!/usr/bin/env bash
 
 export LOCAL_USERNAME=${LOCAL_USERNAME:-devuser}
-export LOCAL_USER_ID=${LOCAL_USER_ID:-1000}
+export LOCAL_USER_ID=${LOCAL_USERID:-1000}
+USE_LOCAL_USER=${USE_CI_USER:-true}
 
-if [ -n "$LOCAL_USER" ]; then
-    echo "Starting with UID : $LOCAL_USER_ID"
+if [ x"$USE_LOCAL_USER" = x"true" ]; then
+    (id -u $LOCAL_USERNAME >/dev/null 2>&1) || useradd -s /bin/bash -u $LOCAL_USERID -o -G wheel -m $LOCAL_USERNAME
+    echo "Starting with UID : $LOCAL_USERID"
 
-    useradd -s /bin/bash -u $LOCAL_USER_ID -o -G sudo -M $LOCAL_USERNAME
-    if [ ! -d "/home/$LOCAL_USERNAME" ]; then
-        mkdir -p /home/$LOCAL_USERNAME
-    fi
-    chown -R $LOCAL_USERNAME:$LOCAL_USERNAME /home/$LOCAL_USERNAME
     export HOME=/home/$LOCAL_USERNAME
 
     [ -f /docker-entrypoint-prepare ] && . /docker-entrypoint-prepare

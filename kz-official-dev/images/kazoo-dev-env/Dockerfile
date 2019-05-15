@@ -1,9 +1,7 @@
-ARG ERL_VERSION=latest
-FROM erlang:${ERL_VERSION}
-ARG ERL_VERSION
+ARG OTP_VERSION=22.0
+FROM erlang:${OTP_VERSION}
 
-ENV ERL_VERSION ERL_VERSION
-ENV OTP_VERSION ERL_VERSION
+ENV OTP_VERSION ${OTP_VERSION:-22.0}
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV APT_LISTCHANGES_FRONTEND=none
@@ -15,32 +13,37 @@ RUN echo ":: Locales and others" \
         apt-transport-https \
         locales gnupg \
     \
-    && echo ":: Cleanup!" \
-    && rm -rf /tmp/* \
-    && rm -rf /var/lib/apt/lists/* \
+    ## Adding CouchDB repo and GPG key
+    && echo ":: Setting up good repos" \
+    ## bcc needs netprefs as build dependency which is non-free
+    && sed -r -i 's/(stretch.*main)$/\1 non-free/g' /etc/apt/sources.list \
+    \
+    && echo ":: Adding CouchDB repo" \
+    && (echo "deb https://apache.bintray.com/couchdb-deb stretch main" | tee -a /etc/apt/sources.list) \
+    && (curl -L https://couchdb.apache.org/repo/bintray-pubkey.asc | apt-key add -) \
+    \
+    # && echo ":: Adding LLVM repo" \
+    # && echo >> /etc/apt/sources.list \
+    # && echo '# LLVM repo (in hope to add bcc & bpftrace later)' >> /etc/apt/sources.list \
+    # && (echo "deb http://apt.llvm.org/stretch/ llvm-toolchain-stretch main" | tee -a /etc/apt/sources.list) \
+    # && (echo "deb-src http://apt.llvm.org/stretch/ llvm-toolchain-stretch main" | tee -a /etc/apt/sources.list) \
+    # && echo "# LLVM 8" >> /etc/apt/sources.list \
+    # && (echo "deb http://apt.llvm.org/stretch/ llvm-toolchain-stretch-8 main" | tee -a /etc/apt/sources.list) \
+    # && (echo "deb-src http://apt.llvm.org/stretch/ llvm-toolchain-stretch-8 main" | tee -a /etc/apt/sources.list) \
+    # && (curl -L https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -) \
     \
     && echo ":: Set timezone to UTC by default" \
     && ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime \
-    && locale-gen C.UTF-8 \
-    && echo "$ERL_VERSION" > /otp_version
-
-# http://bugs.python.org/issue19846
-# > At the moment, setting "LANG=C" on a Linux system *fundamentally breaks Python 3*
-#   and that's not OK.
-ENV LANG C.UTF-8
-
-## Adding CouchDB repo and GPG key
-RUN echo ":: Adding CouchDB repo" \
-    && (echo "deb https://apache.bintray.com/couchdb-deb stretch main" | tee -a /etc/apt/sources.list) \
-    && (curl -L https://couchdb.apache.org/repo/bintray-pubkey.asc | apt-key add -)
-
-## Install build time tools and some other utilities
-RUN echo ":: Install them all!" \
+    && locale-gen en_US.UTF-8 \
+    && echo "$OTP_VERSION" > /otp_version \
+    \
+    ## Install build time tools and some other utilities
+    && echo ":: Install them all!" \
     && apt-get update \
     && apt-get install --no-install-recommends -y \
         ## editors and tools
         neovim emacs-nox ctags bash-completion tmux \
-        silversearcher-ag jq colordiff \
+        silversearcher-ag jq colordiff htop \
         ## useful tools
         man sudo less whois strace tcpdump net-tools ntpdate dnsutils psmisc lsof \
         ## Kazoo runtime dependencies
@@ -56,12 +59,14 @@ RUN echo ":: Install them all!" \
         perf-tools-unstable \
     \
     && echo ":: Setup sudo" \
-    && echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers \
+    && echo '%sudo ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers \
     && visudo -c -f /etc/sudoers \
     \
     && echo ":: Cleanup!!" \
     && rm -rf /tmp/* \
     && rm -rf /var/lib/apt/lists/*
+
+ENV LANG en_US.UTF-8
 
 RUN echo ":: Install nvim and docs dependencies" \
     # setuptools is needed to install python-neovim
@@ -69,9 +74,9 @@ RUN echo ":: Install nvim and docs dependencies" \
     && pip3 install setuptools \
     && pip install neovim pyembed-markdown \
     && pip3 install neovim pyembed-markdown \
-    && ln -s /opt/couchdb/bin/couchjs /usr/bin/couchj
-
-RUN echo ":: Installing su-exec" \
+    && ln -s /opt/couchdb/bin/couchjs /usr/bin/couchj \
+    \
+    && echo ":: Installing su-exec" \
     && git clone https://github.com/ncopa/su-exec.git /tmp/su-exec \
     && cd /tmp/su-exec \
     && make \
@@ -79,35 +84,36 @@ RUN echo ":: Installing su-exec" \
     && rm -rf /tmp/*
 
 RUN echo ":: Installing dotfiles" \
-    && mkdir -p /home/devuser \
+    && rm -rf /etc/skel \
+    && mkdir -p /etc/skel \
     && (curl -L https://api.github.com/repos/icehess/dotfiles/tarball/docker-lite \
-        | tar -C /home/devuser -xz --strip 1 \
+        | tar -C /etc/skel -xz --strip 1 \
        ) \
     \
     && echo ":: Installing fzf" \
-    && mkdir -p /home/devuser/.fzf \
+    && mkdir -p /etc/skel/.fzf \
     && (curl -L https://api.github.com/repos/junegunn/fzf/tarball \
-        | tar -C /home/devuser/.fzf -xz --strip 1 \
+        | tar -C /etc/skel/.fzf -xz --strip 1 \
        ) \
-    && /home/devuser/.fzf/install --bin \
+    && /etc/skel/.fzf/install --bin \
     \
     && echo ":: Setting up nvim" \
-    && HOME=/home/devuser nvim +PlugInstall +qall --cmd 'set rtp^=/home/devuser/.vim' \
-    && mv /home/devuser/.dotfiles-site/files/vim/plugins/kazoo_erlc.vim \
-        /home/devuser/.vim/bundle/ale/ale_linters/erlang/ \
+    && HOME=/etc/skel nvim +PlugInstall +qall --cmd 'set rtp^=/etc/skel/.vim' \
+    && mv /etc/skel/.dotfiles-site/files/vim/plugins/kazoo_erlc.vim \
+        /etc/skel/.vim/bundle/ale/ale_linters/erlang/ \
     \
     && echo ":: Cleanup!!" \
-    && for dir in /home/devuser/.vim/bundle/* ; do rm -rf $dir/.git ; done \
-    && for dir in /home/devuser/.vim/bundle/*/doc ; do rm -rf $dir ; done \
-    && for dir in /home/devuser/.vim/bundle/*/test; do rm -rf $dir ; done \
-    && find /home/devuser/.vim/bundle/ -name *.png -exec rm {} \; \
-    && find /home/devuser/.vim/bundle/ -name *.gif -exec rm {} \; \
-    && find /home/devuser/.vim/bundle/ -name *.jpg -exec rm {} \; \
-    && find /home/devuser/.vim/bundle/ -name *.md -exec rm {} \; \
-    && find /home/devuser/.vim/bundle/ -name LICENCE -exec rm {} \; \
+    && for dir in /etc/skel/.vim/bundle/* ; do rm -rf $dir/.git ; done \
+    && for dir in /etc/skel/.vim/bundle/*/doc ; do rm -rf $dir ; done \
+    && for dir in /etc/skel/.vim/bundle/*/test; do rm -rf $dir ; done \
+    && find /etc/skel/.vim/bundle/ -name *.png -exec rm {} \; \
+    && find /etc/skel/.vim/bundle/ -name *.gif -exec rm {} \; \
+    && find /etc/skel/.vim/bundle/ -name *.jpg -exec rm {} \; \
+    && find /etc/skel/.vim/bundle/ -name *.md -exec rm {} \; \
+    && find /etc/skel/.vim/bundle/ -name LICENCE -exec rm {} \; \
     \
     && echo ":: Setting up root dotfiles" \
-    && rm -rf /root && cp -R /home/devuser /root
+    && rm -rf /root && cp -R /etc/skel /root
 
 ENV LOCAL_USERNAME devuser
 
@@ -116,4 +122,4 @@ COPY docker-entrypoint.sh /docker-entrypoint.sh
 EXPOSE 11500 8000 5555
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["bash", "--login"]
+CMD ["/bin/bash", "--login"]

@@ -1,9 +1,9 @@
 #!/bin/sh
 
-TAG=${TAG:-19}
-TAG=${OTP_VERSION:-$TAG}
+OTP_VERSION=${OTP_VERSION:-22.0}
+TAG=$OTP_VERSION
 
 REPO=${REPO:-icehess}
-NAME=${KZ_DEV_IMG_NAME:-kz-dev-env}
+NAME=${IMG_NAME:-kz-dev-env}
 
-docker build . --rm --force-rm --build-arg ERL_VERSION=$TAG -t $REPO/$NAME:$TAG
+docker build . --rm --force-rm --build-arg OTP_VERSION=$TAG -t $REPO/$NAME:$TAG
