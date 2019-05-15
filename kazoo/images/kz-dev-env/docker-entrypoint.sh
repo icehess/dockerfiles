@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 export LOCAL_USERNAME=${LOCAL_USERNAME:-devuser}
-export LOCAL_USER_ID=${LOCAL_USERID:-1000}
+export LOCAL_USERID=${LOCAL_USERID:-1000}
 USE_LOCAL_USER=${USE_CI_USER:-true}
 
 if [ x"$USE_LOCAL_USER" = x"true" ]; then
