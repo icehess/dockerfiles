@@ -130,7 +130,7 @@ services:
   #         - 'kazoo_ecallmgr.{{.Task.Slot}}'
 
   monster-ui:
-    image: node:8.11.3-stretch
+    image: node:10.16.0-alpine
     hostname: 'monster-ui.{{.Task.Slot}}'
     environment:
        TERM: screen-256color
@@ -143,15 +143,12 @@ services:
       - type: bind
         source: ${wKazoo:?err}/monster-ui
         target: "/opt/monster-ui"
-      - type: bind
-        source: ${wKazoo:?err}/su-exec/su-exec
-        target: "/su-exec"
     ports:
       - target: 3000
         mode: host
     tty: true
     entrypoint: /monster-entrypoint.sh
-    command: ["/opt/monster-ui/node_modules/gulp/bin/gulp.js"]
+    command: ["/opt/monster-ui/node_modules/gulp/bin/gulp.js", "serve-dev"]
     networks:
       kazoo:
         aliases:

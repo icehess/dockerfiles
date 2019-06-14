@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 echo "Setting up Monster-UI"
 [ ! -d /opt/monster-ui/node_modules ] || npm install
