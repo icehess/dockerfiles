@@ -1,4 +1,4 @@
-FROM icehess/kz-centos-dev:latest
+FROM icehess/kz-centos-base:latest
 
 RUN echo ":: Install the actual package of interest!" \
     && yum install -y \

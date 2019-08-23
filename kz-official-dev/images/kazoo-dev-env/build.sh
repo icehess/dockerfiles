@@ -1,9 +1,0 @@
-#!/bin/sh
-
-OTP_VERSION=${OTP_VERSION:-22.0}
-TAG=$OTP_VERSION
-
-REPO=${REPO:-icehess}
-NAME=${IMG_NAME:-kz-dev-env}
-
-docker build . --rm --force-rm --build-arg OTP_VERSION=$TAG -t $REPO/$NAME:$TAG

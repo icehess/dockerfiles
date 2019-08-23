@@ -10,7 +10,7 @@ x-node-env:
 x-devol-cfg:
   &kz-vol
     - type: bind
-      source: ${wKazoo}/master
+      source: ${KAZOO_SRC:?give me your kazoo source path}
       target: /opt/kazoo
       read_only: false
     - type: bind
@@ -29,17 +29,22 @@ x-devol-cfg:
       source: ./config.ini
       target: /etc/kazoo/config.ini
 
+volumes:
+    couchdb-data:
+        name: kzmaster-couchdb-data
+
 services:
   couchdb:
     image: couchdb:latest
-    hostname: 'couchdb.dev'
+    hostname: 'couchdb.hsm.com'
     environment:
-      NODENAME: 'couchdb.dev'
+      NODENAME: 'couchdb.hsm.com'
     volumes:
       - type: bind
         source: ${wWork}/dockerfiles/kazoo/stacks/all_kz/couchdb_cluster.ini
         target: /opt/couchdb/etc/local.d/20-cluster.ini
       - type: volume
+        source: couchdb-data
         target: "/opt/couchdb/data"
     network_mode: host
     # when not using network_mpde=host
@@ -54,8 +59,10 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management
-    hostname: 'rabbitmq.dev'
+    hostname: 'rabbitmq.hsm.com'
     network_mode: host
+    environment:
+        RABBITMQ_USE_LONGNAME: 'true'
     # when not using network_mpde=host
     # ports:
     #   - target: 15672 # management UI
@@ -66,8 +73,8 @@ services:
     #   kazoo:
 
   kazoo_apps:
-    image: icehess/kz-dev-env:19
-    hostname: 'kapps.dev'
+    image: icehess/kz-dev-env:21
+    hostname: 'kazoo_apps.hsm.com'
     environment:
        << : *kz-env
        KAZOO_NODE: kazoo_apps
@@ -93,8 +100,8 @@ services:
     #   kazoo:
 
   kazoo_ecallmgr:
-    image: icehess/kz-dev-env:19
-    hostname: 'ecallmgr.dev'
+    image: icehess/kz-dev-env:21
+    hostname: 'ecallmgr.hsm.com'
     environment:
        << : *kz-env
        KAZOO_NODE: ecallmgr
@@ -113,8 +120,8 @@ services:
     #   kazoo:
 
   freeswitch:
-    image: icehess/kz-fs:latest
-    hostname: 'freeswitch.dev'
+    image: icehess/kz-fs:20.19.6-2600hz
+    hostname: 'freeswitch.hsm.com'
     command: /usr/bin/docker-freeswitch start
     environment:
         LOCAL_USER: "true"
@@ -125,8 +132,8 @@ services:
     #   kazoo:
 
   kamailio:
-    image: icehess/kz-kam:latest
-    hostname: 'kamailio.dev'
+    image: icehess/kz-kam:5.1.9-2600hz.rc0.2
+    hostname: 'kamailio.hsm.com'
     command: /usr/bin/docker-kamailio start
     environment:
         LOCAL_USER: "true"
@@ -169,22 +176,24 @@ services:
     # networks:
     #   kazoo:
 
-  # monster-ui:
-  #   image: ${MONSTER_IMG:-node:8.11.3-stretch}
-  #   hostname: 'portal.dev'
-  #   environment:
-  #      TERM: screen-256color
-  #   volumes:
-  #     - type: bind
-  #       source: ./monster-entrypoint.sh
-  #       target: /monster-entrypoint.sh
-  #     - type: bind
-  #       source: ${wKazoo}/monster-ui
-  #       target: "/opt/monster-ui"
-  #   tty: true
-  #   entrypoint: /monster-entrypoint.sh
-  #   command: ["/opt/monster-ui/node_modules/gulp/bin/gulp.js"]
-  #   network_mode: host
+  monster-ui:
+    image: ${MONSTER_IMG:-node:10.16.0-alpine}
+    hostname: 'portal.hsm.com'
+    environment:
+       TERM: screen-256color
+       LC_CTYPE: en_US.UTF-8
+       LANG: en_US.UTF-8
+    volumes:
+      - type: bind
+        source: ./monster-entrypoint.sh
+        target: /monster-entrypoint.sh
+      - type: bind
+        source: ${wKazoo}/monster-ui
+        target: "/opt/monster-ui"
+    tty: true
+    entrypoint: /monster-entrypoint.sh
+    command: ["/opt/monster-ui/node_modules/gulp/bin/gulp.js", "serve-dev"]
+    network_mode: host
     # when not using network_mpde=host
     # ports:
     #   - target: 3000
@@ -194,6 +203,7 @@ services:
 
   mailcatcher:
     image: 'schickling/mailcatcher'
+    hostname: 'mail.hsm.com'
     network_mode: host
     # when not using network_mpde=host
     # ports:
