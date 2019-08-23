@@ -188,7 +188,7 @@ start() {
     check_config
     check_fork
 
-    ${BIN_FILE} -DD -f ${CFG_FILE} -m ${SHM_MEMORY} -M ${PKG_MEMORY} ${EXTRA_OPTIONS} "$@"
+    ${BIN_FILE} -E -e -DD -f ${CFG_FILE} -m ${SHM_MEMORY} -M ${PKG_MEMORY} ${EXTRA_OPTIONS} "$@"
 }
 
 status() {
