@@ -10,7 +10,7 @@ x-node-env:
 x-devol-cfg:
   &kz-vol
     - type: bind
-      source: ${KAZOO_SRC:?give me your kazoo source path}
+      source: ${wKazoo}/master
       target: /opt/kazoo
       read_only: false
     - type: bind
@@ -32,6 +32,8 @@ x-devol-cfg:
 volumes:
     couchdb-data:
         name: kzmaster-couchdb-data
+    rabbit-data:
+        name: kz-master-rabbit-data
 
 services:
   couchdb:
@@ -63,6 +65,10 @@ services:
     network_mode: host
     environment:
         RABBITMQ_USE_LONGNAME: 'true'
+    volumes:
+        - type: volume
+          source: rabbit-data
+          target: /var/lib/rabbitmq
     # when not using network_mpde=host
     # ports:
     #   - target: 15672 # management UI
@@ -137,6 +143,7 @@ services:
     command: /usr/bin/docker-kamailio start
     environment:
         LOCAL_USER: "true"
+        # KAM_EXTRA_OPTIONS: "-x tlsf -w /tmp -A WITH_AUTH_TOKEN"
     #     ENABLE_SIP_TRACE_ROLE: "true"
     network_mode: host
     # when not using network_mpde=host
