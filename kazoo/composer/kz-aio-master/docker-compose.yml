@@ -143,7 +143,7 @@ services:
     command: /usr/bin/docker-kamailio start
     environment:
         LOCAL_USER: "true"
-        # KAM_EXTRA_OPTIONS: "-x tlsf -w /tmp -A WITH_AUTH_TOKEN"
+        KAM_EXTRA_OPTIONS: "-x tlsf -w /tmp -A WITH_AUTH_TOKEN"
     #     ENABLE_SIP_TRACE_ROLE: "true"
     network_mode: host
     # when not using network_mpde=host
