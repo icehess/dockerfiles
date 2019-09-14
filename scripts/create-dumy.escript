@@ -36,6 +36,7 @@
              }
             ]
            }
+          ,{<<"accept_charges">>, true}
           ]
          )
        ).
@@ -52,6 +53,7 @@
               ,{<<"origin">>,<<"voip">>}
               ]
              }
+          ,{<<"accept_charges">>, true}
             ]
            }])
        ).
@@ -78,6 +80,7 @@
              }
             ]
            }
+          ,{<<"accept_charges">>, true}
           ])
        ).
 
@@ -119,6 +122,7 @@
              }
             ]
            }
+          ,{<<"accept_charges">>, true}
           ])
        ).
 
