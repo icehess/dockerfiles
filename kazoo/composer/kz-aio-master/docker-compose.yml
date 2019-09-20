@@ -138,7 +138,7 @@ services:
     #   kazoo:
 
   kamailio:
-    image: icehess/kz-kam:5.1.9-2600hz.rc0.2
+    image: icehess/kz-kam:5.2.5-2600hz.rc1.0
     hostname: 'kamailio.hsm.com'
     command: /usr/bin/docker-kamailio start
     environment:

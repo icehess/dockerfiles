@@ -1,6 +1,7 @@
 FROM icehess/kz-centos-base:latest
 
 RUN echo ":: Install the actual package of interest!" \
+    && yum-config-manager --enable 2600hz-experimental \
     && yum install -y \
         kazoo-kamailio \
     && /etc/kazoo/kamailio/db_scripts/create-kazoodb-sql.sh \
