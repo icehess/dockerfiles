@@ -1,0 +1,83 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.18.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: kazoo-ecallmgr
+  name: kazoo-ecallmgr
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.18.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: kazoo-ecallmgr
+    spec:
+      containers:
+      - args:
+        - bash
+        env:
+        - name: KAZOO_APPS
+          value: ecallmgr
+        - name: KAZOO_COOKIE
+          value: change_me
+        - name: KAZOO_NODE
+          value: ecallmgr
+        - name: LOCAL_USER
+          value: "true"
+        - name: NODE_NAME
+          value: ecallmgr
+        - name: PATH
+          value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/kazoo/_rel/kazoo/bin
+        - name: REL
+          value: ecallmgr
+        - name: TERM
+          value: screen-256color
+        image: icehess/kz-dev-env:21
+        name: kazoo-ecallmgr
+        resources: {}
+        tty: true
+        volumeMounts:
+        - mountPath: /opt/kazoo
+          name: kazoo-ecallmgr-claim0
+        - mountPath: /opt/sounds
+          name: kazoo-ecallmgr-claim1
+          readOnly: true
+        - mountPath: /opt/monster-ui
+          name: kazoo-ecallmgr-claim2
+          readOnly: true
+        - mountPath: /opt/scripts
+          name: kazoo-ecallmgr-claim3
+          readOnly: true
+        - mountPath: /etc/kazoo/config.ini
+          name: kazoo-ecallmgr-claim4
+      hostname: ecallmgr.hsm.com
+      restartPolicy: Always
+      volumes:
+      - name: kazoo-ecallmgr-claim0
+        persistentVolumeClaim:
+          claimName: kazoo-ecallmgr-claim0
+      - name: kazoo-ecallmgr-claim1
+        persistentVolumeClaim:
+          claimName: kazoo-ecallmgr-claim1
+          readOnly: true
+      - name: kazoo-ecallmgr-claim2
+        persistentVolumeClaim:
+          claimName: kazoo-ecallmgr-claim2
+          readOnly: true
+      - name: kazoo-ecallmgr-claim3
+        persistentVolumeClaim:
+          claimName: kazoo-ecallmgr-claim3
+          readOnly: true
+      - name: kazoo-ecallmgr-claim4
+        persistentVolumeClaim:
+          claimName: kazoo-ecallmgr-claim4
+status: {}

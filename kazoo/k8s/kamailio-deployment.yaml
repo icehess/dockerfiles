@@ -1,0 +1,37 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.18.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: kamailio
+  name: kamailio
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.18.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: kamailio
+    spec:
+      containers:
+      - args:
+        - /usr/bin/docker-kamailio
+        - start
+        env:
+        - name: KAM_EXTRA_OPTIONS
+          value: -x tlsf -w /tmp -A WITH_AUTH_TOKEN
+        - name: LOCAL_USER
+          value: "true"
+        image: icehess/kz-kam:5.1.9-2600hz.rc0.2
+        name: kamailio
+        resources: {}
+      hostname: kamailio.hsm.com
+      restartPolicy: Always
+status: {}

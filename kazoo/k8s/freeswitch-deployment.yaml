@@ -1,0 +1,35 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.18.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: freeswitch
+  name: freeswitch
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.18.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: freeswitch
+    spec:
+      containers:
+      - args:
+        - /usr/bin/docker-freeswitch
+        - start
+        env:
+        - name: LOCAL_USER
+          value: "true"
+        image: icehess/kz-fs:20.19.6-2600hz
+        name: freeswitch
+        resources: {}
+      hostname: freeswitch.hsm.com
+      restartPolicy: Always
+status: {}
