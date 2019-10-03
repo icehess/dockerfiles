@@ -1,0 +1,40 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.18.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: rabbitmq
+  name: rabbitmq
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.18.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: rabbitmq
+    spec:
+      containers:
+      - env:
+        - name: RABBITMQ_USE_LONGNAME
+          value: "true"
+        image: rabbitmq:3-management
+        name: rabbitmq
+        resources: {}
+        volumeMounts:
+        - mountPath: /var/lib/rabbitmq
+          name: rabbit-data
+      hostname: rabbitmq.hsm.com
+      restartPolicy: Always
+      volumes:
+      - name: rabbit-data
+        persistentVolumeClaim:
+          claimName: rabbit-data
+status: {}

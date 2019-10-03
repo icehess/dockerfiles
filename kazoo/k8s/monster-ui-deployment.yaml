@@ -1,0 +1,55 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.18.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: monster-ui
+  name: monster-ui
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.18.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: monster-ui
+    spec:
+      containers:
+      - args:
+        - /opt/monster-ui/node_modules/gulp/bin/gulp.js
+        - serve-dev
+        command:
+        - /monster-entrypoint.sh
+        env:
+        - name: LANG
+          value: en_US.UTF-8
+        - name: LC_CTYPE
+          value: en_US.UTF-8
+        - name: TERM
+          value: screen-256color
+        image: node:10.16.0-alpine
+        name: monster-ui
+        resources: {}
+        tty: true
+        volumeMounts:
+        - mountPath: /monster-entrypoint.sh
+          name: monster-ui-claim0
+        - mountPath: /opt/monster-ui
+          name: monster-ui-claim1
+      hostname: portal.hsm.com
+      restartPolicy: Always
+      volumes:
+      - name: monster-ui-claim0
+        persistentVolumeClaim:
+          claimName: monster-ui-claim0
+      - name: monster-ui-claim1
+        persistentVolumeClaim:
+          claimName: monster-ui-claim1
+status: {}

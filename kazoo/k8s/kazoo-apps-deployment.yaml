@@ -1,0 +1,81 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.18.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: kazoo-apps
+  name: kazoo-apps
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.18.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: kazoo-apps
+    spec:
+      containers:
+      - args:
+        - bash
+        env:
+        - name: KAZOO_COOKIE
+          value: change_me
+        - name: KAZOO_NODE
+          value: kazoo_apps
+        - name: LOCAL_USER
+          value: "true"
+        - name: NODE_NAME
+          value: kazoo_apps
+        - name: PATH
+          value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/kazoo/_rel/kazoo/bin
+        - name: REL
+          value: kazoo_apps
+        - name: TERM
+          value: screen-256color
+        image: icehess/kz-dev-env:21
+        name: kazoo-apps
+        resources: {}
+        tty: true
+        volumeMounts:
+        - mountPath: /opt/kazoo
+          name: kazoo-apps-claim0
+        - mountPath: /opt/sounds
+          name: kazoo-apps-claim1
+          readOnly: true
+        - mountPath: /opt/monster-ui
+          name: kazoo-apps-claim2
+          readOnly: true
+        - mountPath: /opt/scripts
+          name: kazoo-apps-claim3
+          readOnly: true
+        - mountPath: /etc/kazoo/config.ini
+          name: kazoo-apps-claim4
+      hostname: kazoo_apps.hsm.com
+      restartPolicy: Always
+      volumes:
+      - name: kazoo-apps-claim0
+        persistentVolumeClaim:
+          claimName: kazoo-apps-claim0
+      - name: kazoo-apps-claim1
+        persistentVolumeClaim:
+          claimName: kazoo-apps-claim1
+          readOnly: true
+      - name: kazoo-apps-claim2
+        persistentVolumeClaim:
+          claimName: kazoo-apps-claim2
+          readOnly: true
+      - name: kazoo-apps-claim3
+        persistentVolumeClaim:
+          claimName: kazoo-apps-claim3
+          readOnly: true
+      - name: kazoo-apps-claim4
+        persistentVolumeClaim:
+          claimName: kazoo-apps-claim4
+status: {}
