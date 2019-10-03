@@ -57,6 +57,8 @@ RUN echo ":: Locales and others" \
         couchdb \
         ## performance tools
         perf-tools-unstable \
+        ## WeasyPrint dependencies
+        python3-dev python3-setuptools python3-wheel python3-cffi \
     \
     && echo ":: Setup sudo" \
     && echo '%sudo ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers \
@@ -74,6 +76,7 @@ RUN echo ":: Install nvim and docs dependencies" \
     && pip3 install setuptools \
     && pip install neovim pyembed-markdown \
     && pip3 install neovim pyembed-markdown \
+    && pip3 install WeasyPrint \
     && ln -s /opt/couchdb/bin/couchjs /usr/bin/couchj \
     \
     && echo ":: Installing su-exec" \
