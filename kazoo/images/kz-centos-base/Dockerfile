@@ -23,6 +23,7 @@ RUN echo ":: Install them all!" \
         sudo less whois strace tcpdump net-tools ntpdate bind-utils which file psmisc iproute lsof \
         ## su-exec dependencies (will be uninstalled later)
         make gcc \
+        google-roboto-* lato-fonts liberation-fonts liberation-sans-fonts liberation-serif-fonts
     \
     && echo ":: Buld su-exec" \
     && git clone https://github.com/ncopa/su-exec.git /tmp/su-exec \
