@@ -59,6 +59,7 @@ RUN echo ":: Locales and others" \
         perf-tools-unstable \
         ## WeasyPrint dependencies
         python3-dev python3-setuptools python3-wheel python3-cffi \
+        fonts-roboto fonts-liberation2 fonts-lato \
     \
     && echo ":: Setup sudo" \
     && echo '%sudo ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers \
