@@ -66,9 +66,14 @@ services:
     environment:
         RABBITMQ_USE_LONGNAME: 'true'
     volumes:
+        - type: bind
+          source: ./kz-rabbitmq-entry.sh
+          target: /kz-rabbitmq-entry.sh
         - type: volume
           source: rabbit-data
           target: /var/lib/rabbitmq
+    entrypoint: /kz-rabbitmq-entry.sh
+    command: ["rabbitmq-server"]
     # when not using network_mpde=host
     # ports:
     #   - target: 15672 # management UI
