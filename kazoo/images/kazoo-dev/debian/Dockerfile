@@ -7,7 +7,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV APT_LISTCHANGES_FRONTEND=none
 
 ## apt-transport-https is needed because CouchDB repo is https
-RUN echo ":: Locales and others" \
+RUN printf "\n\n:: Using erlang:@$OTP_VERSION\n\n\n" \
+    && echo ":: Locales and others" \
     && apt-get update \
     && apt-get install --no-install-recommends -y \
         apt-transport-https \
@@ -33,6 +34,7 @@ RUN echo ":: Locales and others" \
     # && (curl -L https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -) \
     \
     && echo ":: Set timezone to UTC by default" \
+    && sed -i /etc/locale.gen 's/# en_US.UTF-8/en_US.UTF-8/g' \
     && ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime \
     && locale-gen en_US.UTF-8 \
     && echo "$OTP_VERSION" > /otp_version \
