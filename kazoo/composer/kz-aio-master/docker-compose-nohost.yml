@@ -2,10 +2,12 @@ version: '3.7'
 
 x-node-env:
   &kz-env
-    DISPLAY: "${DISPLAY}"
     LOCAL_USER: "true"
     TERM: screen-256color
     KAZOO_COOKIE: change_me
+    # fucking hell is not enough
+    # https://github.com/docker/for-mac/issues/483
+    SSH_AUTH_SOCK: /ssh-agent
     PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/kazoo/_rel/kazoo/bin"
 
 x-devol-cfg:
@@ -14,7 +16,11 @@ x-devol-cfg:
       source: ${wKazoo}/master
       target: /opt/kazoo
       read_only: false
-      consistency: delegated
+    # fucking hell is not enough
+    # https://github.com/docker/for-mac/issues/483
+    # - type: volume
+    #   source: kazoo-src
+    #   target: /opt/kazoo
     - type: bind
       source: ${wKazoo}/sounds/kazoo-core
       target: /opt/sounds
@@ -33,11 +39,14 @@ x-devol-cfg:
     - type: tmpfs
       target: /etc/kazoo/ra
     - type: bind
-      source: /tmp/.X11-unix
-      target: /tmp/.X11-unix
-      read_only: true
+      # fucking hell is not enough
+      # https://github.com/docker/for-mac/issues/483
+      source: ${SSH_AUTH_SOCK}
+      target: /ssh-agent
 
 volumes:
+    kazoo-src:
+        name: kzsrc
     couchdb-data:
         name: kzmaster-couchdb-data
 
@@ -54,21 +63,21 @@ services:
       - type: volume
         source: couchdb-data
         target: "/opt/couchdb/data"
-    network_mode: host
+    # network_mode: host
     # when not using network_mpde=host
-    # ports:
-    #   - target: 9100
-    #   - target: 5984
-    #     mode: host
-    #   - target: 5986
-    #     mode: host
-    # networks:
-    #   kazoo:
+    ports:
+      - target: 9100
+      - target: 5984
+        published: 5984
+      - target: 5986
+        published: 5986
+    networks:
+      kazoo:
 
   rabbitmq:
     image: rabbitmq:3-management
     hostname: 'rabbitmq.hsm.com'
-    network_mode: host
+    # network_mode: host
     environment:
         RABBITMQ_USE_LONGNAME: 'true'
     volumes:
@@ -80,13 +89,13 @@ services:
     entrypoint: /kz-rabbitmq-entry.sh
     command: ["rabbitmq-server"]
     # when not using network_mpde=host
-    # ports:
-    #   - target: 15672 # management UI
-    #     mode: host
-    #   - target: 5672 # AMQP port
-    #     mode: host
-    # networks:
-    #   kazoo:
+    ports:
+      - target: 15672 # management UI
+        published: 15672
+      - target: 5672 # AMQP port
+        published: 5672
+    networks:
+      kazoo:
 
   kazoo_apps:
     image: icehess/kz-dev-env:21
@@ -99,21 +108,21 @@ services:
     volumes: *kz-vol
     tty: true
     command: ["bash"]
-    network_mode: host
+    # network_mode: host
     # when not using network_mpde=host
-    # ports:
-    #   - target: 11500 # Erlang
-    #     mode: host
-    #   - target: 8000 # Crossbar
-    #     mode: host
-    #   - target: 5555 # Websocket
-    #     mode: host
-    #   - target: 25 # Fax SMTP
-    #     mode: host
-    #   - target: 8001 # GraphQL
-    #     mode: host
-    # networks:
-    #   kazoo:
+    ports:
+      - target: 11500 # Erlang
+        published: 11500
+      - target: 8000 # Crossbar
+        published: 8000
+      - target: 5555 # Websocket
+        published: 5555
+      - target: 25 # Fax SMTP
+        published: 25
+      - target: 8001 # GraphQL
+        published: 8001
+    networks:
+      kazoo:
 
   # kazoo_ecallmgr:
   #   image: icehess/kz-dev-env:21
@@ -127,13 +136,13 @@ services:
   #   volumes: *kz-vol
   #   command: ["bash"]
   #   tty: true
-  #   network_mode: host
+  #   # network_mode: host
   #   # when not using network_mpde=host
-  #   # ports:
-  #   #   - target: 11500
-  #   #     mode: host
-  #   # networks:
-  #   #   kazoo:
+  #   ports:
+  #     - target: 11500
+  #       mode: host
+  #   networks:
+  #     kazoo:
 
   # freeswitch:
   #   image: icehess/kz-fs:20.19.6-2600hz
@@ -207,32 +216,31 @@ services:
       - type: bind
         source: ${wKazoo}/monster-ui
         target: "/opt/monster-ui"
-        consistency: delegated
     tty: true
     entrypoint: /monster-entrypoint.sh
     command: ["/opt/monster-ui/node_modules/gulp/bin/gulp.js", "serve-dev"]
-    network_mode: host
+    # network_mode: host
     # when not using network_mpde=host
-    # ports:
-    #   - target: 3000
-    #     mode: host
-    # networks:
-    #   kazoo:
+    ports:
+      - target: 3000
+        published: 3000
+    networks:
+      kazoo:
 
   mailcatcher:
     image: 'schickling/mailcatcher'
     hostname: 'mail.hsm.com'
-    network_mode: host
+    # network_mode: host
     # when not using network_mpde=host
-    # ports:
-    #   - target: 1080
-    #     mode: host
-    #   - target: 1025
-    #     mode: host
-    # networks:
-    #   - kazoo
+    ports:
+      - target: 1080
+        published: 1080
+      - target: 1025
+        published: 1025
+    networks:
+      - kazoo
 
-# networks:
-#   kazoo:
-#     attachable: true
+networks:
+  kazoo:
+    attachable: true
 
