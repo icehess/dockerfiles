@@ -56,7 +56,8 @@ RUN printf "\n\n:: Using erlang:@$OTP_VERSION\n\n\n" \
         python-yaml python-markdown python-jsonschema \
         python3-yaml python3-markdown python3-jsonschema \
         ## validate-js dependencies
-        couchdb python3-jsbeautifier \
+        couchdb \
+        python3-jsbeautifier \
         ## performance tools
         perf-tools-unstable \
         ## WeasyPrint dependencies
