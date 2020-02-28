@@ -102,82 +102,82 @@ services:
     # networks:
     #   kazoo:
 
-    #  kazoo_ecallmgr:
-    #    image: icehess/kz-dev-env:19
-    #    hostname: 'ecallmgr.4.3.hsm.com'
-    #    environment:
-    #       << : *kz-env
-    #       KAZOO_NODE: ecallmgr
-    #       NODE_NAME: ecallmgr
-    #       REL: ecallmgr
-    #       KAZOO_APPS: "ecallmgr"
-    #    volumes: *kz-vol
-    #    command: ["bash"]
-    #    tty: true
-    #    network_mode: host
-    #    # when not using network_mpde=host
-    #    # ports:
-    #    #   - target: 11500
-    #    #     mode: host
-    #    # networks:
-    #    #   kazoo:
-    #
-    #  freeswitch:
-    #    image: icehess/kz-fs:1.6.20-centos-unofficial
-    #    hostname: 'freeswitch.4.3.hsm.com'
-    #    command: /usr/bin/docker-freeswitch start
-    #    environment:
-    #        LOCAL_USER: "true"
-    #    #    FS_TRACE: "true"
-    #    network_mode: host
-    #    # when not using network_mpde=host
-    #    # networks:
-    #    #   kazoo:
-    #
-    #  kamailio:
-    #    image: icehess/kz-kam:5.1.9-2600hz.rc0.2
-    #    hostname: 'kamailio.4.3.hsm.com'
-    #    command: /usr/bin/docker-kamailio start
-    #    environment:
-    #        LOCAL_USER: "true"
-    #    #     ENABLE_SIP_TRACE_ROLE: "true"
-    #    network_mode: host
-    #    # when not using network_mpde=host
-    #    # ports:
-    #    #   - published: 5060 # SIP TCP
-    #    #     target: 5060
-    #    #     protocol: tcp
-    #    #     mode: host
-    #    #   - published: 5060 # SIP UDP
-    #    #     target: 5060
-    #    #     protocol: udp
-    #    #     mode: host
-    #    #   - published: 5061 # SSIP (SIP TLS)
-    #    #     target: 5061
-    #    #     protocol: tcp
-    #    #     mode: host
-    #    #   - published: 7000 # SIP ALG TCP
-    #    #     target: 7000
-    #    #     protocol: tcp
-    #    #     mode: host
-    #    #   - published: 7000 # SIP ALG UDP
-    #    #     target: 7000
-    #    #     protocol: udp
-    #    #     mode: host
-    #    #   - published: 7001 # SSIP ALG
-    #    #     target: 7001
-    #    #     protocol: tcp
-    #    #     mode: host
-    #    #   - published: 5064 # http/https/websocket
-    #    #     target: 5064
-    #    #     protocol: tcp
-    #    #     mode: host
-    #    #   - published: 5065 # http/https/websocket
-    #    #     target: 5065
-    #    #     protocol: tcp
-    #    #     mode: host
-    #    # networks:
-    #    #   kazoo:
+  kazoo_ecallmgr:
+    image: icehess/kz-dev-env:19
+    hostname: 'ecallmgr.4.3.hsm.com'
+    environment:
+       << : *kz-env
+       KAZOO_NODE: ecallmgr
+       NODE_NAME: ecallmgr
+       REL: ecallmgr
+       KAZOO_APPS: "ecallmgr"
+    volumes: *kz-vol
+    command: ["bash"]
+    tty: true
+    network_mode: host
+    # when not using network_mpde=host
+    # ports:
+    #   - target: 11500
+    #     mode: host
+    # networks:
+    #   kazoo:
+
+  freeswitch:
+    image: icehess/kz-fs:1.6.20-centos-unofficial
+    hostname: 'freeswitch.4.3.hsm.com'
+    command: /usr/bin/docker-freeswitch start
+    environment:
+        LOCAL_USER: "true"
+    #    FS_TRACE: "true"
+    network_mode: host
+    # when not using network_mpde=host
+    # networks:
+    #   kazoo:
+
+  kamailio:
+    image: icehess/kz-kam:5.1.9-2600hz.rc0.2
+    hostname: 'kamailio.4.3.hsm.com'
+    command: /usr/bin/docker-kamailio start
+    environment:
+        LOCAL_USER: "true"
+    #     ENABLE_SIP_TRACE_ROLE: "true"
+    network_mode: host
+    # when not using network_mpde=host
+    # ports:
+    #   - published: 5060 # SIP TCP
+    #     target: 5060
+    #     protocol: tcp
+    #     mode: host
+    #   - published: 5060 # SIP UDP
+    #     target: 5060
+    #     protocol: udp
+    #     mode: host
+    #   - published: 5061 # SSIP (SIP TLS)
+    #     target: 5061
+    #     protocol: tcp
+    #     mode: host
+    #   - published: 7000 # SIP ALG TCP
+    #     target: 7000
+    #     protocol: tcp
+    #     mode: host
+    #   - published: 7000 # SIP ALG UDP
+    #     target: 7000
+    #     protocol: udp
+    #     mode: host
+    #   - published: 7001 # SSIP ALG
+    #     target: 7001
+    #     protocol: tcp
+    #     mode: host
+    #   - published: 5064 # http/https/websocket
+    #     target: 5064
+    #     protocol: tcp
+    #     mode: host
+    #   - published: 5065 # http/https/websocket
+    #     target: 5065
+    #     protocol: tcp
+    #     mode: host
+    # networks:
+    #   kazoo:
 
   monster-ui:
     image: ${MONSTER_IMG:-node:10.16.0-alpine}

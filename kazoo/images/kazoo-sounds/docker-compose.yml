@@ -1,0 +1,25 @@
+version: '3.7'
+
+services:
+
+  base:
+    image: 'alpine:latest'
+    command: ["/bin/ash"]
+    volumes:
+      - type: volume
+        source: sounds
+        target: /opt/kazoo-sounds
+        read_only: true
+    tty: true
+
+  sounds:
+    image: 'icehess/kazoo-sounds:latest'
+    command: ["/bin/ash"]
+    tty: true
+    volumes:
+      - type: volume
+        source: sounds
+        target: /opt/kazoo-sounds
+
+volumes:
+  sounds:
