@@ -2,6 +2,7 @@ version: '3.7'
 
 x-node-env:
   &kz-env
+    DISPLAY: "${DISPLAY}"
     LOCAL_USER: "true"
     TERM: screen-256color
     KAZOO_COOKIE: change_me
@@ -30,6 +31,10 @@ x-devol-cfg:
       target: /etc/kazoo/config.ini
     - type: tmpfs
       target: /etc/kazoo/ra
+    - type: bind
+      source: /tmp/.X11-unix
+      target: /tmp/.X11-unix
+      read_only: true
 
 volumes:
     couchdb-data:

@@ -34,7 +34,7 @@ RUN printf "\n\n:: Using erlang:@$OTP_VERSION\n\n\n" \
     # && (curl -L https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -) \
     \
     && echo ":: Set timezone to UTC by default" \
-    && sed -i /etc/locale.gen 's/# en_US.UTF-8/en_US.UTF-8/g' \
+    && sed -i 's/# en_US\.UTF-8/en_US.UTF-8/g' /etc/locale.gen \
     && ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime \
     && locale-gen en_US.UTF-8 \
     && echo "$OTP_VERSION" > /otp_version \
@@ -56,7 +56,7 @@ RUN printf "\n\n:: Using erlang:@$OTP_VERSION\n\n\n" \
         python-yaml python-markdown python-jsonschema \
         python3-yaml python3-markdown python3-jsonschema \
         ## validate-js dependencies
-        couchdb \
+        couchdb python3-jsbeautifier \
         ## performance tools
         perf-tools-unstable \
         ## WeasyPrint dependencies
