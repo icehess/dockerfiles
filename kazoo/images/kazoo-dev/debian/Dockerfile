@@ -1,4 +1,4 @@
-ARG OTP_VERSION=21
+ARG OTP_VERSION=22
 FROM erlang:${OTP_VERSION}
 
 ENV OTP_VERSION ${OTP_VERSION:-21}
@@ -20,8 +20,18 @@ RUN printf "\n\n:: Using erlang:@$OTP_VERSION\n\n\n" \
     && sed -r -i 's/(stretch.*main)$/\1 non-free/g' /etc/apt/sources.list \
     \
     && echo ":: Adding CouchDB repo" \
-    && (echo "deb https://apache.bintray.com/couchdb-deb stretch main" | tee -a /etc/apt/sources.list) \
-    && (curl -L https://couchdb.apache.org/repo/bintray-pubkey.asc | apt-key add -) \
+    && case "$OTP_VERSION" in \
+           22*) \
+             echo "it is buster" \
+             && (echo "deb https://apache.bintray.com/couchdb-deb buster main" | tee -a /etc/apt/sources.list) \
+             && (curl -L https://couchdb.apache.org/repo/bintray-pubkey.asc | apt-key add -) \
+             ;; \
+           *) \
+             echo "it is stretch" \
+             && (echo "deb https://apache.bintray.com/couchdb-deb stretch main" | tee -a /etc/apt/sources.list) \
+             && (curl -L https://couchdb.apache.org/repo/bintray-pubkey.asc | apt-key add -) \
+             ;; \
+       esac \
     \
     # && echo ":: Adding LLVM repo" \
     # && echo >> /etc/apt/sources.list \
@@ -50,7 +60,7 @@ RUN printf "\n\n:: Using erlang:@$OTP_VERSION\n\n\n" \
         man sudo less whois strace tcpdump net-tools ntpdate dnsutils psmisc lsof \
         ## Kazoo runtime dependencies
         zip unzip libexpat1-dev htmldoc sox libsox-fmt-all ghostscript \
-        imagemagick libtiff-tools openjdk-8-jre libreoffice-writer \
+        imagemagick libtiff-tools openjdk-11-jre libreoffice-writer \
         ## Docs dependencies
         mkdocs python-pip python3-pip cpio \
         python-yaml python-markdown python-jsonschema \
@@ -78,8 +88,8 @@ RUN echo ":: Install nvim and docs dependencies" \
     # setuptools is needed to install python-neovim
     && pip install setuptools \
     && pip3 install setuptools \
-    && pip install neovim pyembed-markdown \
-    && pip3 install neovim pyembed-markdown \
+    && pip install pynvim pyembed-markdown \
+    && pip3 install pynvim pyembed-markdown \
     && pip3 install WeasyPrint \
     && ln -s /opt/couchdb/bin/couchjs /usr/bin/couchj \
     \
