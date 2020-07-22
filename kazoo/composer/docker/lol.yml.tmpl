@@ -1,0 +1,24 @@
+
+services:
+  couchdb:
+    image: couchdb:latest
+    hostname: 'couchdb.kz-test.com'
+    environment:
+      # this make sure couchdb is using the above hostname
+      # to create db shards
+      NODENAME: 'couchdb.kz-test.com'
+    volumes:
+      - type: bind
+        source: ${DOCKER_ROOT}/files/couchdb-cluster.ini
+        target: /opt/couchdb/etc/local.d/20-cluster.ini
+      - type: volume
+        source: couchdb-data
+        target: "/opt/couchdb/data"
+      - {{ data | indent(8) }}
+    ports:
+      - target: 9100
+        published: 9100
+      - target: 5984
+        published: 5984
+      - target: 5986
+        published: 5986
