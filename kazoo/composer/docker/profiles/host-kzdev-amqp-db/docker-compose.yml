@@ -2,38 +2,39 @@ version: '3.7'
 
 x-node-env:
   &kz-env
-    LOCAL_USER: "true"
-    TERM: screen-256color
-    KAZOO_COOKIE: change_me
-    PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/kazoo/_rel/kazoo/bin"
+  LOCAL_USER: "true"
+  TERM: screen-256color
+  KAZOO_COOKIE: change_me
+  PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/kazoo/_rel/kazoo/bin"
 
 x-devol-cfg:
   &kz-vol
-    - type: bind
-      source: ${KAZOO_SRC}
-      target: /opt/kazoo
-    - type: volume
-      source: kazoo-sounds
-      target: /opt/sounds
-      read_only: true
-    - type: bind
-      source: ${wKazoo}/monster-ui
-      target: /opt/monster-ui
-      read_only: true
-    - type: bind
-      source: ${DOCKER_ROOT}/scripts
-      target: /opt/scripts
-    - type: bind
-      source: ${DOCKER_ROOT}/files/kazoo-config.ini
-      target: /etc/kazoo/config.ini
-    - type: tmpfs
-      target: /etc/kazoo/ra
+  - type: bind
+    source: ${KAZOO_SRC}
+    target: /opt/kazoo
+  - type: volume
+    source: kazoo-sounds
+    target: /opt/sounds
+    read_only: true
+  - type: bind
+    source: ${wKazoo}/monster-ui
+    target: /opt/monster-ui
+    read_only: true
+  - type: bind
+    source: ${DOCKER_ROOT}/scripts
+    target: /opt/scripts
+  - type: bind
+    source: ${DOCKER_ROOT}/files/kazoo-config.ini
+    target: /etc/kazoo/config.ini
+  - type: tmpfs
+    target: /etc/kazoo/ra
 
 volumes:
-    kazoo-sounds:
-      name: kz-master-kazoo-sounds
-    couchdb-data:
-      name: kz-master-couchdb-data
+  kazoo-sounds:
+    name: kz-master-kazoo-sounds
+  couchdb-data:
+    name: kz-master-couchdb-data
+    # name: kz-proper-standard-view
 
 services:
   couchdb:

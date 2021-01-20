@@ -1,9 +1,9 @@
 #!/bin/sh
 
-TAG=${TAG:-stable}
+TAG=${TAG:-latest}
 TAG=${CENTOS_DEV_TAG:-$TAG}
 
 REPO=${REPO:-icehess}
-NAME=${CENTOS_DEV_IMG_NAME:-kz-centos-base}
+NAME=${CENTOS_DEV_IMG_NAME:-centos-base}
 
-docker build --rm --force-rm . -t $REPO/$NAME:$TAG
+docker build --rm . -t $REPO/$NAME:$TAG
