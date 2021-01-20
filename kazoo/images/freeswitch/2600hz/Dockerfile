@@ -1,9 +1,10 @@
-FROM icehess/kz-centos-base:stable
+FROM icehess/centos-base:latest
 
 ARG CFG_BRANCH=master
 ENV CFG_BRANCH=${CFG_BRANCH}
 
 RUN echo ":: Install the actual package of interest!" \
+    # && yum-config-manager --enable 2600hz-experimental \
     && yum install -y \
         kazoo-freeswitch \
     \

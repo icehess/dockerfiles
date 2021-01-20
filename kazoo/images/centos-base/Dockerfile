@@ -2,32 +2,35 @@ FROM centos:7
 
 RUN echo ":: Installing repo and others" \
     && yum install -y \
-        'https://packages.2600hz.com/centos/7/stable/2600hz-release/4.3/2600hz-release-4.3-0.el7.centos.noarch.rpm' \
-    # && yum install -y yum-utils \ ## is it already installed?
-    && (localedef -v -c -i en_US -f UTF-8 en_US.UTF-8 || true) \
-    && yum-config-manager --enable 2600hz-stable \
+        'https://packages.2600hz.com/centos/7/staging/2600hz-release/4.3/2600hz-release-4.3-0.el7.centos.noarch.rpm' \
+    && yum install -y epel-release \
+    && yum -y install https://repo.ius.io/ius-release-el7.rpm \
+    && yum-config-manager --enable 2600hz-staging \
     \
     && echo ":: Cleanup!" \
     && rm -rf /tmp/* \
     && yum clean all \
     && rm -rf /var/cache/yum/* /root/.pki
 
+ENV LANG en_US.UTF-8
+
 RUN echo ":: Install them all!" \
-    && yum install -y epel-release \
-    && yum update -y --exclude shadow-utils.\*\
-    ## for git2
-    && yum remove -y git* \
-    && yum -y install https://centos7.iuscommunity.org/ius-release.rpm \
+    && yum update -y \
     && yum install -y \
-        gnupg2 parallel python36-pip \
+        curl wget zip unzip \
+        gnupg2 parallel python3-pip \
+        \
         ## editors and tools
         neovim python36-neovim bash-completion bash-completion-extras tmux \
-        the_silver_searcher jq colordiff git \
+        the_silver_searcher jq colordiff \
         ## useful tools (psmisc: killall)
         sudo less whois strace tcpdump net-tools ntpdate bind-utils which file psmisc iproute lsof \
         ## su-exec dependencies (will be uninstalled later)
         make gcc \
-        google-roboto-* lato-fonts liberation-fonts liberation-sans-fonts liberation-serif-fonts \
+    \
+    # kazoo-5+ needs git2
+    && yum autoremove -y git* \
+    && yum install -y git224 \
     \
     && echo ":: Install required python3 packages" \
     && pip3 install jinja2 pyyaml requests \
@@ -37,17 +40,17 @@ RUN echo ":: Install them all!" \
     && make -C "/tmp/su-exec" \
     && cp /tmp/su-exec/su-exec /usr/bin/su-exec \
     \
-    && (localedef -v -c -i en_US -f UTF-8 en_US.UTF-8 || true) \
-    \
     && echo ":: Setup sudo" \
     && echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers \
     && visudo -c -f /etc/sudoers \
+    \
+    && (localedef -v -c -i en_US -f UTF-8 en_US.UTF-8 || true) \
     \
     && echo ":: Cleanup!!" \
     && yum autoremove -y gcc make \
     && rm -rf /tmp/* \
     && yum clean all \
-    && rm -rf /var/cache/yum/* /root/.pki
+    && rm -rf /var/cache/yum/* /root/.pki /roo/.cache
 
 ENV LANG en_US.UTF-8
 

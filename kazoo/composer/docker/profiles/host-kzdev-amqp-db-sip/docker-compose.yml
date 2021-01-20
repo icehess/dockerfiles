@@ -129,7 +129,7 @@ services:
     network_mode: host
 
   freeswitch:
-    image: icehess/kz-fs:20.19.6-2600hz
+    image: icehess/kz-fs:20.20.5-2600hz.5
     hostname: 'freeswitch.2600hz-test.com'
     command: /usr/bin/docker-freeswitch start
     environment:
@@ -138,7 +138,7 @@ services:
     network_mode: host
 
   kamailio:
-    image: icehess/kz-kam:5.2.5-2600hz.rc1.0
+    image: icehess/kz-kam:5.4.1-2600hz.4
     hostname: 'kamailio.2600hz-test.com'
     command: /usr/bin/docker-kamailio start
     environment:

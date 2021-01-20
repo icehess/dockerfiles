@@ -164,7 +164,11 @@ fi
 
 ## import docker file
 if [ "$(grep -co '"docker.cfg"' $CFG_DIR/local.cfg)" -eq 0 ]; then
-    sed -r -i '/defs\.cfg/i import_file "docker.cfg"' $CFG_DIR/local.cfg
+    #sed -r -i '/defs\.cfg/i import_file "docker.cfg"' $CFG_DIR/local.cfg
+    echo 'import_file "docker.cfg"' >> $CFG_DIR/local.cfg.bak
+    echo >> $CFG_DIR/local.cfg.bak
+    cat $CFG_DIR/local.cfg >> $CFG_DIR/local.cfg.bak
+    mv $CFG_DIR/local.cfg.bak $CFG_DIR/local.cfg
 fi
 
 cat > /etc/kazoo/kamailio/docker.cfg <<-EOF
