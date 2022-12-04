@@ -1,10 +1,13 @@
-ARG OTP_VERSION=23
+ARG OTP_VERSION=23.3.4.18
 FROM erlang:${OTP_VERSION}
+
+ARG VERSION_CODENAME
 
 ENV OTP_VERSION ${OTP_VERSION:-23}
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV APT_LISTCHANGES_FRONTEND=none
+ENV VERSION_CODENAME ${VERSION_CODENAME:-buster}
 
 ## apt-transport-https is needed because CouchDB repo is https
 RUN printf "\n\n:: Using erlang:@$OTP_VERSION\n\n\n" \
@@ -12,13 +15,12 @@ RUN printf "\n\n:: Using erlang:@$OTP_VERSION\n\n\n" \
     && apt update \
     && apt install --no-install-recommends -y \
         apt-transport-https \
-        locales gnupg \
+        locales gnupg sudo \
     \
     ## Adding CouchDB repo and GPG key
     && echo ":: Adding CouchDB repo" \
-    && (curl https://couchdb.apache.org/repo/keys.asc | gpg --dearmor | tee /usr/share/keyrings/couchdb-archive-keyring.gpg >/dev/null 2>&1) \
-    && . /etc/os-release \
-    && (echo "deb [signed-by=/usr/share/keyrings/couchdb-archive-keyring.gpg] https://apache.jfrog.io/artifactory/couchdb-deb/ ${VERSION_CODENAME} main" | tee /etc/apt/sources.list.d/couchdb.list >/dev/null) \
+    && (curl -L https://couchdb.apache.org/repo/keys.asc | gpg --dearmor | sudo tee /usr/share/keyrings/couchdb-archive-keyring.gpg >/dev/null 2>&1) \
+    && (echo "deb [signed-by=/usr/share/keyrings/couchdb-archive-keyring.gpg] https://apache.jfrog.io/artifactory/couchdb-deb/ ${VERSION_CODENAME} main" | sudo tee /etc/apt/sources.list.d/couchdb.list >/dev/null) \
     \
     && echo ":: Set timezone to UTC by default" \
     && sed -i 's/# en_US\.UTF-8/en_US.UTF-8/g' /etc/locale.gen \
@@ -29,18 +31,21 @@ RUN printf "\n\n:: Using erlang:@$OTP_VERSION\n\n\n" \
     ## Install build time tools and some other utilities
     && echo ":: Install them all!" \
     && apt-get update \
+    && echo "couchdb couchdb/mode select none" | debconf-set-selections \
     && apt-get install --no-install-recommends -y \
         ## editors and tools
-        neovim emacs-nox ctags bash-completion tmux \
+        neovim emacs-nox bash-completion \
         silversearcher-ag jq colordiff htop \
         ## useful tools
-        man sudo less whois strace tcpdump net-tools ntpdate dnsutils psmisc lsof \
+        man less whois strace tcpdump net-tools ntpdate dnsutils psmisc lsof \
         ## Kazoo runtime dependencies
-        zip unzip libexpat1-dev \
+        zip unzip libexpat1-dev htmldoc sox libsox-fmt-all ghostscript \
         ## Docs dependencies
-        python3-pip cpio \
+        mkdocs python3-pip cpio \
+        python3-yaml python3-markdown python3-jsonschema \
         ## validate-js dependencies
         couchdb \
+        python3-jsbeautifier \
         ## performance tools
         perf-tools-unstable \
     \
@@ -57,8 +62,7 @@ ENV LANG en_US.UTF-8
 RUN echo ":: Install nvim and docs dependencies" \
     && echo ":: Install required python3 packages" \
     && pip3 install setuptools \
-    && pip3 install jinja2 pyyaml requests \
-    && pip3 install mkdocs markdown pymarkdown pyembed-markdown jsonschema jsbeautifier \
+    && pip3 install pyembed-markdown \
     \
     && ln -s /opt/couchdb/bin/couchjs /usr/bin/couchjs \
     \
