@@ -1,8 +1,8 @@
 FROM icehess/centos-base:latest
 
 RUN echo ":: Installing development tools" \
-    && yum update -y \
-    && yum install -y \
+    && sudo yum update -y \
+    && sudo yum install -y \
         autoconf \
         automake \
         bzip2-devel \
@@ -29,9 +29,9 @@ RUN echo ":: Installing development tools" \
         createrepo \
     \
     && echo ":: Cleanup!!" \
-    && rm -rf /tmp/* \
-    && yum clean all \
-    && rm -rf /var/cache/yum/* /root/.pki /root/.cache
+    && sudo rm -rf /tmp/* \
+    && sudo yum clean all \
+    && sudo rm -rf /var/cache/yum/* /root/.pki \
+    && sudo rm -rf ~/.cache/pip
 
-ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["bash", "--login"]
