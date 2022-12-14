@@ -1,0 +1,10 @@
+services:
+  web:
+    image: nginx:alpine
+    volumes:
+      - type: bind
+        source: /Users/hesaam/work/dockerfiles/kazoo/composer/kazoo-mac-docker/ssh-test/lol.socket
+        target: /run/host-services/ssh-auth.sock
+    environment:
+      - SSH_AUTH_SOCK=/run/host-services/ssh-auth.sock
+

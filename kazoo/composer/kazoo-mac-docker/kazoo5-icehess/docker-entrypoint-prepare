@@ -1,0 +1,9 @@
+if [ -d /home/devuser/kazoo ]; then
+    export wKazoo="/home/devuser/kazoo"
+    export KAZOO_ROOT="/home/devuser/kazoo"
+    export KAZOO_SRC="/home/devuser/kazoo"
+
+    alias kz="cd $KAZOO_SRC"
+fi
+
+sudo chown -R devuser:devuser /home/devuser/.host-services
