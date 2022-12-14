@@ -64,18 +64,46 @@ RUN echo ":: Install nvim and docs dependencies" \
     && pip3 install setuptools \
     && pip3 install pyembed-markdown \
     \
-    && ln -s /opt/couchdb/bin/couchjs /usr/bin/couchjs \
-    \
-    && echo ":: Installing su-exec" \
-    && git clone https://github.com/ncopa/su-exec.git /tmp/su-exec \
-    && cd /tmp/su-exec \
-    && make \
-    && cp su-exec /usr/bin/su-exec \
-    && rm -rf /tmp/*
+    && ln -s /opt/couchdb/bin/couchjs /usr/bin/couchjs
 
-ENV LOCAL_USERNAME devuser
+RUN echo ":: Installing dotfiles" \
+    && rm -rf /etc/skel \
+    && mkdir -p /etc/skel \
+    && (curl -L https://api.github.com/repos/icehess/dotfiles/tarball/docker-lite \
+        | tar -C /etc/skel -xz --strip 1 \
+       ) \
+    \
+    && echo ":: Installing fzf" \
+    && mkdir -p /etc/skel/.fzf \
+    && (curl -L https://api.github.com/repos/junegunn/fzf/tarball \
+        | tar -C /etc/skel/.fzf -xz --strip 1 \
+       ) \
+    && /etc/skel/.fzf/install --bin \
+    \
+    && echo ":: Setting up nvim" \
+    && HOME=/etc/skel nvim +PlugInstall +qall --cmd 'set rtp^=/etc/skel/.vim' \
+    && mv /etc/skel/.dotfiles-site/files/vim/plugins/kazoo_erlc.vim \
+        /etc/skel/.vim/bundle/ale/ale_linters/erlang/ \
+    \
+    && echo ":: Cleanup!! yooohooo" \
+    && for dir in /etc/skel/.vim/bundle/* ; do rm -rf $dir/.git ; done \
+    && for dir in /etc/skel/.vim/bundle/*/doc ; do rm -rf $dir ; done \
+    && for dir in /etc/skel/.vim/bundle/*/test; do rm -rf $dir ; done \
+    && find /etc/skel/.vim/bundle/ -name *.png -exec rm {} \; \
+    && find /etc/skel/.vim/bundle/ -name *.gif -exec rm {} \; \
+    && find /etc/skel/.vim/bundle/ -name *.jpg -exec rm {} \; \
+    && find /etc/skel/.vim/bundle/ -name *.md -exec rm {} \; \
+    && find /etc/skel/.vim/bundle/ -name LICENCE -exec rm {} \; \
+    \
+    && echo ":: Setting up root dotfiles" \
+    && rm -rf /root && cp -R /etc/skel /root
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
+
+RUN useradd -s /bin/bash -u 1000 -o -G sudo -m devuser
+USER devuser
+
+WORKDIR /home/devuser
 
 EXPOSE 11500 8000 5555
 
