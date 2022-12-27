@@ -1,0 +1,25 @@
+############################
+# OS X
+############################
+.DS_Store
+.AppleDouble
+.LSOverride
+.Spotlight-V100
+.Trashes
+._*
+
+############################
+# Linux
+############################
+*~
+
+############################
+# Windows
+############################
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+
+__pycache__/
