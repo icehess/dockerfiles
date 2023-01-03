@@ -1,0 +1,29 @@
+= neovim-aarch64-appimage
+
+Build nvim.appimage for aarch64(arm64) architecture
+
+== Requirements
+
+* Docker
+
+== Usage
+
+build master branch
+
+----
+./build.sh
+----
+
+build with specified version
+
+----
+./build.sh v0.7.2
+----
+
+== License
+
+MIT
+
+## URL
+
+https://github.com/matsuu/neovim-aarch64-appimage
