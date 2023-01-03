@@ -100,7 +100,11 @@ RUN echo ":: Installing dotfiles" \
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 
-RUN useradd -s /bin/bash -u 1000 -o -G sudo -m devuser
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+
+RUN groupadd -g ${GROUP_ID} devuser
+RUN useradd -s /bin/bash -u ${USER_ID} -o -G devuser,sudo -m devuser
 USER devuser
 
 WORKDIR /home/devuser
