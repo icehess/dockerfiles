@@ -114,6 +114,22 @@ docker compose up -d
 docker exec -ti docker-desktop-kazoo_apps-1 bash
 ```
 
+5. Kazoo source code is bind mounted at `/home/devuser/kazoo`:
+
+```
+cd /home/devuser/kazoo
+make
+``
+
+You can alos use the handy dandy `kz` alias to switch to that directory:
+
+```
+$ kz
+$ pwd
+/home/devuser/kazoo
+$ make
+```
+
 ## Docker Desktop
 
 This the original and old one and it follows kind of the same approach as Docker Dekstop
