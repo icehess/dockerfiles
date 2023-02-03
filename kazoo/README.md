@@ -130,7 +130,7 @@ $ pwd
 $ make
 ```
 
-## Docker Desktop
+## Compose directory
 
 This the original and old one and it follows kind of the same approach as Docker Dekstop
 above, but has different mechanism for port forwarding and network. Mainly it has
