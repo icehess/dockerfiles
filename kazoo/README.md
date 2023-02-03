@@ -119,7 +119,7 @@ docker exec -ti docker-desktop-kazoo_apps-1 bash
 ```
 cd /home/devuser/kazoo
 make
-``
+```
 
 You can alos use the handy dandy `kz` alias to switch to that directory:
 
