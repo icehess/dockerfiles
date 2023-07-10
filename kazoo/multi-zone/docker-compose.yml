@@ -1,0 +1,100 @@
+version: '3.7'
+
+services:
+    rabbit-fmt:
+        image: rabbitmq:3-management
+        hostname: 'rabbit-fmt.icehess.page'
+        environment:
+            # This is needed to allow distributed Erlang shell
+            # and start of rabbitmq
+            RABBITMQ_USE_LONGNAME: 'true'
+        volumes:
+            # enabling rabbitmq_consistent_hash_exchange plugin
+            - type: bind
+              source: ${KZ_DOCKER_DIR}/files/rabbitmq-entrypoint.sh
+              target: /rabbitmq-entrypoint.sh
+            # without this sometimes docker/rabbitmq veing stupid
+            # and causing rabbitmq to behave strangely (not creating exchange or etc)
+            - type: tmpfs
+              target: /var/lib/rabbitmq
+        entrypoint: /rabbitmq-entrypoint.sh
+        command: ["rabbitmq-server"]
+        ports:
+            - target: 15672 # management UI
+              published: 15673
+            - target: 5672 # AMQP port
+              published: 5673
+
+    rabbit-ord:
+        image: rabbitmq:3-management
+        hostname: 'rabbit-ord.icehess.page'
+        environment:
+            # This is needed to allow distributed Erlang shell
+            # and start of rabbitmq
+            RABBITMQ_USE_LONGNAME: 'true'
+        volumes:
+            # enabling rabbitmq_consistent_hash_exchange plugin
+            - type: bind
+              source: ${KZ_DOCKER_DIR}/files/rabbitmq-entrypoint.sh
+              target: /rabbitmq-entrypoint.sh
+            # without this sometimes docker/rabbitmq veing stupid
+            # and causing rabbitmq to behave strangely (not creating exchange or etc)
+            - type: tmpfs
+              target: /var/lib/rabbitmq
+        entrypoint: /rabbitmq-entrypoint.sh
+        command: ["rabbitmq-server"]
+        ports:
+            - target: 15672 # management UI
+              published: 15674
+            - target: 5672 # AMQP port
+              published: 5674
+
+    rabbit-ewr:
+        image: rabbitmq:3-management
+        hostname: 'rabbit-ewr.icehess.page'
+        environment:
+            # This is needed to allow distributed Erlang shell
+            # and start of rabbitmq
+            RABBITMQ_USE_LONGNAME: 'true'
+        volumes:
+            # enabling rabbitmq_consistent_hash_exchange plugin
+            - type: bind
+              source: ${KZ_DOCKER_DIR}/files/rabbitmq-entrypoint.sh
+              target: /rabbitmq-entrypoint.sh
+            # without this sometimes docker/rabbitmq veing stupid
+            # and causing rabbitmq to behave strangely (not creating exchange or etc)
+            - type: tmpfs
+              target: /var/lib/rabbitmq
+        entrypoint: /rabbitmq-entrypoint.sh
+        command: ["rabbitmq-server"]
+        ports:
+            - target: 15672 # management UI
+              published: 15675
+            - target: 5672 # AMQP port
+              published: 5675
+
+    couchdb:
+      image: couchdb:latest
+      hostname: 'couchdb.icehess.page'
+      environment:
+        # make sure couchdb using the above hostname
+        # by setting NODENAME to hostname, otherwise db's are
+        # are created with random docker hostname/container name
+        NODENAME: 'couchdb.icehess.page'
+      volumes:
+        - type: bind
+          source: ${KZ_DOCKER_DIR}/files/couchdb-cluster.ini
+          target: /opt/couchdb/etc/local.d/20-cluster.ini
+        - type: volume
+          source: couchdb-data
+          target: "/opt/couchdb/data"
+      ports:
+        - target: 9100
+          # published: 9100
+        - target: 5984
+          published: 5984
+        - target: 5986
+          published: 5986
+
+volumes:
+    couchdb-data:
